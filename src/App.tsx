@@ -12,6 +12,7 @@ import BookingFormSimulator from './components/BookingFormSimulator';
 import WpAdminSimulator from './components/WpAdminSimulator';
 import CodeExporter from './components/CodeExporter';
 import LogsPanel from './components/LogsPanel';
+import { pluginPackageInfo } from './plugin-code';
 
 // ==========================================
 // SEED DATA & INITIALIZATION
@@ -860,15 +861,27 @@ export default function App() {
         </div>
 
         {/* Direct Download Action Button */}
-        <a
-          href="/yasmine-artistry-booking.zip"
-          download="yasmine-artistry-booking-v1.2.zip"
-          onClick={() => showToast('Downloading yasmine-artistry-booking-v1.2.zip...', 'success')}
-          className="flex items-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-sm hover:shadow transition duration-150 cursor-pointer flex-shrink-0"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download Plugin .ZIP</span>
-        </a>
+        <div className="flex items-center space-x-2">
+          <a
+            href={`/${encodeURIComponent(pluginPackageInfo.primaryFile)}`}
+            download={pluginPackageInfo.primaryFile}
+            onClick={() => showToast(`Downloading ${pluginPackageInfo.primaryFile} (${pluginPackageInfo.sizeKb} KB)...`, 'success')}
+            className="flex items-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-sm hover:shadow transition duration-150 cursor-pointer flex-shrink-0"
+            title={`Build Timestamp: ${pluginPackageInfo.timestamp}`}
+          >
+            <Download className="w-4 h-4" />
+            <span>Download {pluginPackageInfo.primaryFile}</span>
+          </a>
+          <a
+            href={`/${encodeURIComponent(pluginPackageInfo.timestampedFile)}`}
+            download={pluginPackageInfo.timestampedFile}
+            onClick={() => showToast(`Downloading timestamped ${pluginPackageInfo.timestampedFile}...`, 'info')}
+            className="hidden sm:flex items-center space-x-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-2xl transition duration-150 cursor-pointer flex-shrink-0"
+            title="Download version with explicit compile timestamp"
+          >
+            <span className="font-mono text-[10px] text-slate-500">#{pluginPackageInfo.timestamp}</span>
+          </a>
+        </div>
       </header>
 
       {/* Main Dual-Column Content */}

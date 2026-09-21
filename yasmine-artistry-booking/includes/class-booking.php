@@ -204,7 +204,7 @@ class YAB_Booking {
 				'updated_at'        => current_time( 'mysql' ),
 			),
 			array( 'id' => $booking_id ),
-			array( '%s', '%s', '%f', '%f', null, '%s' ),
+			array( '%s', '%s', '%f', '%f', '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -378,7 +378,7 @@ class YAB_Booking {
 				'updated_at'          => current_time( 'mysql' ),
 			),
 			array( 'id' => $booking_id ),
-			array( '%s', '%s', null, '%s' ),
+			array( '%s', '%s', '%s', '%s' ),
 			array( '%d' )
 		);
 

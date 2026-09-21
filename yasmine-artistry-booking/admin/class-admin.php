@@ -27,8 +27,8 @@ class YAB_Admin {
 
 		// Top Level Menu
 		add_menu_page(
-			__( 'Yasmine Booking', 'yasmine-artistry-booking' ),
-			__( 'Yasmine Booking', 'yasmine-artistry-booking' ),
+			__( 'Faiiya Booking', 'yasmine-artistry-booking' ),
+			__( 'Faiiya Booking', 'yasmine-artistry-booking' ),
 			$cap,
 			'yab-bookings',
 			array( 'YAB_Admin_Bookings', 'render' ),

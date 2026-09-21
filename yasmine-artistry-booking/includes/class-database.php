@@ -37,7 +37,11 @@ class YAB_Database {
 	public static function create_tables() {
 		global $wpdb;
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		if ( ! function_exists( 'dbDelta' ) ) {
+			if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			}
+		}
 
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -200,14 +204,26 @@ class YAB_Database {
 			KEY idx_booking (booking_id)
 		) {$charset_collate};";
 
-		dbDelta( $sql_categories );
-		dbDelta( $sql_services );
-		dbDelta( $sql_locations );
-		dbDelta( $sql_business_hours );
-		dbDelta( $sql_special_days );
-		dbDelta( $sql_bookings );
-		dbDelta( $sql_payments );
-		dbDelta( $sql_logs );
+		if ( function_exists( 'dbDelta' ) ) {
+			dbDelta( $sql_categories );
+			dbDelta( $sql_services );
+			dbDelta( $sql_locations );
+			dbDelta( $sql_business_hours );
+			dbDelta( $sql_special_days );
+			dbDelta( $sql_bookings );
+			dbDelta( $sql_payments );
+			dbDelta( $sql_logs );
+		} else {
+			// Fallback direct execution if dbDelta is unavailable
+			$wpdb->query( $sql_categories );
+			$wpdb->query( $sql_services );
+			$wpdb->query( $sql_locations );
+			$wpdb->query( $sql_business_hours );
+			$wpdb->query( $sql_special_days );
+			$wpdb->query( $sql_bookings );
+			$wpdb->query( $sql_payments );
+			$wpdb->query( $sql_logs );
+		}
 	}
 
 	/**

@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Yasmine Artistry Booking
- * Plugin URI: https://yasmineartistry.com/
+ * Plugin Name: Faiiya Booking
+ * Plugin URI: https://faiiya.com/
  * Description: Production-grade salon and home-service booking engine with dynamic location pricing, Paystack deposits, atomic availability tracking, and frontend rescheduling.
  * Version: 1.2
- * Author: Custom WordPress Solutions
- * Author URI: https://yasmineartistry.com/
+ * Author: Faiiya Artistry
+ * Author URI: https://faiiya.com/
  * Text Domain: yasmine-artistry-booking
  * Domain Path: /languages
  * Requires at least: 5.8
@@ -17,6 +17,33 @@
 // Prevent direct script access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+// Ensure compatibility functions for older WP or customized hosting
+if ( ! function_exists( 'wp_timezone' ) ) {
+	function wp_timezone() {
+		$tzstring = get_option( 'timezone_string' );
+		if ( empty( $tzstring ) ) {
+			$offset = (float) get_option( 'gmt_offset', 0 );
+			$hours = (int) $offset;
+			$minutes = (int) ( ( $offset - $hours ) * 60 );
+			$tzstring = sprintf( '%+03d:%02d', $hours, abs( $minutes ) );
+		}
+		return new DateTimeZone( $tzstring );
+	}
+}
+
+if ( ! function_exists( 'wp_timezone_string' ) ) {
+	function wp_timezone_string() {
+		$tzstring = get_option( 'timezone_string' );
+		if ( ! empty( $tzstring ) ) {
+			return $tzstring;
+		}
+		$offset = (float) get_option( 'gmt_offset', 0 );
+		$hours = (int) $offset;
+		$minutes = (int) ( ( $offset - $hours ) * 60 );
+		return sprintf( '%+03d:%02d', $hours, abs( $minutes ) );
+	}
 }
 
 // Plugin constants.
@@ -50,15 +77,13 @@ require_once YAB_PLUGIN_DIR . 'includes/class-elementor.php';
 // Frontend
 require_once YAB_PLUGIN_DIR . 'frontend/class-frontend.php';
 
-// Admin
-if ( is_admin() ) {
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin.php';
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin-bookings.php';
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin-services.php';
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin-categories.php';
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin-locations.php';
-	require_once YAB_PLUGIN_DIR . 'admin/class-admin-settings.php';
-}
+// Admin - always load admin classes if class_exists guard or in admin/ajax/cron context
+require_once YAB_PLUGIN_DIR . 'admin/class-admin.php';
+require_once YAB_PLUGIN_DIR . 'admin/class-admin-bookings.php';
+require_once YAB_PLUGIN_DIR . 'admin/class-admin-services.php';
+require_once YAB_PLUGIN_DIR . 'admin/class-admin-categories.php';
+require_once YAB_PLUGIN_DIR . 'admin/class-admin-locations.php';
+require_once YAB_PLUGIN_DIR . 'admin/class-admin-settings.php';
 
 /**
  * Main Plugin Orchestrator Singleton.
