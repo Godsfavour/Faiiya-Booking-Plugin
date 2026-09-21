@@ -1,0 +1,402 @@
+/**
+ * Yasmine Artistry Booking - Admin Stylesheet
+ * Refined, clean UI with modern spacing, rounded borders, and clear typography.
+ */
+
+:root {
+	--yab-adm-primary: #1e3a8a;
+	--yab-adm-primary-hover: #1d4ed8;
+	--yab-adm-bg: #f8fafc;
+	--yab-adm-surface: #ffffff;
+	--yab-adm-border: #e2e8f0;
+	--yab-adm-border-subtle: #edf2f7;
+	--yab-adm-text-main: #0f172a;
+	--yab-adm-text-muted: #64748b;
+	--yab-adm-radius-sm: 6px;
+	--yab-adm-radius-md: 10px;
+	--yab-adm-radius-lg: 12px;
+	--yab-adm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+	--yab-adm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.yab-admin-wrap {
+	margin: 20px 20px 40px 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: var(--yab-adm-text-main);
+	-webkit-font-smoothing: antialiased;
+}
+
+.yab-admin-wrap h1.wp-heading-inline {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--yab-adm-text-main);
+	letter-spacing: -0.02em;
+	margin-bottom: 8px;
+}
+
+.yab-admin-wrap .page-title-action {
+	border-radius: var(--yab-adm-radius-sm);
+	font-weight: 600;
+	border: 1px solid #cbd5e1;
+	background: #ffffff;
+	color: var(--yab-adm-text-main);
+	transition: all 0.2s ease;
+	padding: 5px 12px;
+}
+
+.yab-admin-wrap .page-title-action:hover {
+	background: #f1f5f9;
+	border-color: #94a3b8;
+	color: var(--yab-adm-primary);
+}
+
+/* Sub-navigation tabs (All, Confirmed, etc.) */
+.yab-admin-wrap .subsubsub {
+	margin: 16px 0;
+	font-size: 13px;
+	color: var(--yab-adm-text-muted);
+}
+
+.yab-admin-wrap .subsubsub li a {
+	color: var(--yab-adm-text-muted);
+	padding: 4px 8px;
+	border-radius: var(--yab-adm-radius-sm);
+	transition: all 0.15s ease;
+}
+
+.yab-admin-wrap .subsubsub li a:hover {
+	color: var(--yab-adm-primary);
+	background: #e2e8f0;
+}
+
+.yab-admin-wrap .subsubsub li a.current {
+	font-weight: 700;
+	color: var(--yab-adm-primary);
+	background: #e0e7ff;
+}
+
+/* Nav Tab Wrapper in Settings */
+.yab-admin-wrap .nav-tab-wrapper {
+	border-bottom: 2px solid var(--yab-adm-border);
+	margin: 20px 0 24px 0;
+	display: flex;
+	gap: 6px;
+}
+
+.yab-admin-wrap .nav-tab {
+	border: 1px solid transparent;
+	border-bottom: none;
+	background: transparent;
+	color: var(--yab-adm-text-muted);
+	font-size: 14px;
+	font-weight: 600;
+	padding: 8px 18px;
+	border-radius: var(--yab-adm-radius-md) var(--yab-adm-radius-md) 0 0;
+	transition: all 0.2s ease;
+	margin: 0;
+}
+
+.yab-admin-wrap .nav-tab:hover {
+	background: #f1f5f9;
+	color: var(--yab-adm-text-main);
+}
+
+.yab-admin-wrap .nav-tab-active,
+.yab-admin-wrap .nav-tab-active:hover {
+	background: #ffffff;
+	color: var(--yab-adm-primary);
+	border: 1px solid var(--yab-adm-border);
+	border-bottom: 2px solid #ffffff;
+	margin-bottom: -2px;
+}
+
+/* Postboxes & Cards */
+.yab-admin-wrap .postbox {
+	background: var(--yab-adm-surface);
+	border: 1px solid var(--yab-adm-border);
+	border-radius: var(--yab-adm-radius-md);
+	box-shadow: var(--yab-adm-shadow-sm);
+	margin-bottom: 24px;
+	overflow: hidden;
+}
+
+.yab-admin-wrap .postbox-header {
+	padding: 14px 20px;
+	background: #fafbfc;
+	border-bottom: 1px solid var(--yab-adm-border);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.yab-admin-wrap .postbox-header h2 {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--yab-adm-text-main);
+	margin: 0;
+	padding: 0;
+}
+
+.yab-admin-wrap .postbox .inside {
+	padding: 20px 24px;
+	margin: 0;
+}
+
+/* Two Column & Detail Grids */
+.yab-grid-2col {
+	display: grid;
+	grid-template-columns: 380px 1fr;
+	gap: 24px;
+	margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+	.yab-grid-2col {
+		grid-template-columns: 1fr;
+	}
+}
+
+.yab-detail-grid {
+	display: grid;
+	grid-template-columns: 1fr 340px;
+	gap: 24px;
+	margin-top: 18px;
+}
+
+@media (max-width: 980px) {
+	.yab-detail-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.yab-form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+/* Sub-headings */
+.yab-section-subtitle {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--yab-adm-text-main);
+	margin: 16px 0 8px 0;
+}
+
+/* Forms & Tables */
+.yab-admin-wrap .form-table {
+	margin: 0;
+}
+
+.yab-admin-wrap .form-table th {
+	font-size: 13px;
+	font-weight: 600;
+	color: #334155;
+	padding: 16px 12px 16px 0;
+	width: 220px;
+	vertical-align: top;
+}
+
+.yab-admin-wrap .form-table td {
+	padding: 14px 12px 14px 0;
+	vertical-align: top;
+	color: var(--yab-adm-text-main);
+}
+
+.yab-admin-wrap input[type="text"],
+.yab-admin-wrap input[type="email"],
+.yab-admin-wrap input[type="password"],
+.yab-admin-wrap input[type="number"],
+.yab-admin-wrap input[type="tel"],
+.yab-admin-wrap input[type="search"],
+.yab-admin-wrap select,
+.yab-admin-wrap textarea {
+	border: 1px solid var(--yab-adm-border);
+	border-radius: var(--yab-adm-radius-sm);
+	padding: 8px 12px;
+	font-size: 13px;
+	color: var(--yab-adm-text-main);
+	background: #ffffff;
+	box-shadow: none;
+	transition: all 0.2s ease;
+	line-height: 1.5;
+}
+
+.yab-admin-wrap textarea.code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+	background: #f8fafc;
+	border-color: #cbd5e1;
+	line-height: 1.6;
+}
+
+.yab-admin-wrap input[type="text"]:focus,
+.yab-admin-wrap input[type="email"]:focus,
+.yab-admin-wrap input[type="password"]:focus,
+.yab-admin-wrap input[type="number"]:focus,
+.yab-admin-wrap input[type="tel"]:focus,
+.yab-admin-wrap input[type="search"]:focus,
+.yab-admin-wrap select:focus,
+.yab-admin-wrap textarea:focus {
+	border-color: var(--yab-adm-primary);
+	box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.15);
+	outline: none;
+}
+
+.yab-admin-wrap .description {
+	color: var(--yab-adm-text-muted);
+	font-size: 12px;
+	margin-top: 6px;
+	line-height: 1.4;
+}
+
+/* WP List Tables Clean-up */
+.yab-admin-wrap .wp-list-table {
+	border: 1px solid var(--yab-adm-border);
+	border-radius: var(--yab-adm-radius-md);
+	box-shadow: var(--yab-adm-shadow-sm);
+	overflow: hidden;
+	background: #ffffff;
+}
+
+.yab-admin-wrap .wp-list-table thead th,
+.yab-admin-wrap .wp-list-table tfoot th {
+	background: #f8fafc;
+	color: #475569;
+	font-weight: 700;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--yab-adm-border);
+}
+
+.yab-admin-wrap .wp-list-table tbody tr {
+	transition: background 0.15s ease;
+}
+
+.yab-admin-wrap .wp-list-table tbody tr:hover {
+	background: #f8fafc;
+}
+
+.yab-admin-wrap .wp-list-table td {
+	padding: 14px;
+	vertical-align: middle;
+	font-size: 13px;
+	border-top: 1px solid var(--yab-adm-border-subtle);
+}
+
+/* Status Badges */
+.yab-status-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	line-height: 1;
+}
+
+.yab-status-confirmed {
+	background: #dcfce7;
+	color: #166534;
+	border: 1px solid #bbf7d0;
+}
+
+.yab-status-pending_payment {
+	background: #fef9c3;
+	color: #854d0e;
+	border: 1px solid #fef08a;
+}
+
+.yab-status-cancelled {
+	background: #fee2e2;
+	color: #991b1b;
+	border: 1px solid #fecaca;
+}
+
+.yab-status-completed {
+	background: #e2e8f0;
+	color: #334155;
+	border: 1px solid #cbd5e1;
+}
+
+/* Primary and Action Buttons */
+.yab-admin-wrap .button-primary {
+	background: var(--yab-adm-primary) !important;
+	border-color: var(--yab-adm-primary) !important;
+	color: #ffffff !important;
+	font-weight: 600;
+	border-radius: var(--yab-adm-radius-sm);
+	padding: 6px 16px;
+	height: auto;
+	line-height: 1.5;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	transition: all 0.15s ease;
+}
+
+.yab-admin-wrap .button-primary:hover,
+.yab-admin-wrap .button-primary:focus {
+	background: var(--yab-adm-primary-hover) !important;
+	border-color: var(--yab-adm-primary-hover) !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.yab-admin-wrap .button-secondary {
+	border-radius: var(--yab-adm-radius-sm);
+	font-weight: 600;
+	border-color: #cbd5e1;
+	color: var(--yab-adm-text-main);
+	transition: all 0.15s ease;
+}
+
+.yab-admin-wrap .button-secondary:hover {
+	border-color: #94a3b8;
+	background: #f1f5f9;
+}
+
+/* Audit logs list */
+.yab-log-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	font-size: 13px;
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.yab-log-list li {
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--yab-adm-border-subtle);
+	background: #ffffff;
+	border-radius: var(--yab-adm-radius-sm);
+	margin-bottom: 6px;
+	border: 1px solid #f1f5f9;
+}
+
+.yab-log-list li:last-child {
+	margin-bottom: 0;
+}
+
+.yab-log-time {
+	color: var(--yab-adm-text-muted);
+	font-size: 11px;
+	display: block;
+	margin-top: 3px;
+}
+
+.text-right {
+	text-align: right !important;
+}
+
+/* Helpers */
+.yab-card-highlight {
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	border-radius: var(--yab-adm-radius-md);
+	padding: 16px;
+	margin-bottom: 16px;
+}
