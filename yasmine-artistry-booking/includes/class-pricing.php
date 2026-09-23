@@ -17,9 +17,10 @@ class YAB_Pricing {
 	 * @param int $service_id
 	 * @param int $location_id
 	 * @param string $payment_choice 'deposit' or 'full' (customer preference)
+	 * @param int $extra_looks Number of extra looks requested (default 0)
 	 * @return array|WP_Error
 	 */
-	public static function calculate_quote( $service_id, $location_id, $payment_choice = 'deposit' ) {
+	public static function calculate_quote( $service_id, $location_id, $payment_choice = 'deposit', $extra_looks = 0 ) {
 		$service = YAB_Service::get( $service_id );
 		if ( ! $service || ! $service->is_active ) {
 			return new WP_Error( 'invalid_service', __( 'The requested service is invalid or currently unavailable.', 'yasmine-artistry-booking' ) );
@@ -30,14 +31,31 @@ class YAB_Pricing {
 			return new WP_Error( 'invalid_location', __( 'The requested service area is invalid or not currently serviced.', 'yasmine-artistry-booking' ) );
 		}
 
+		// Verify service offers this specific location
+		if ( ! YAB_Service::is_location_available( $service->id, $location->id ) ) {
+			return new WP_Error(
+				'service_location_unavailable',
+				sprintf(
+					/* translators: 1: Service name, 2: Location name */
+					__( '"%1$s" is not currently offered in %2$s. Please select an eligible location.', 'yasmine-artistry-booking' ),
+					$service->name,
+					$location->name
+				)
+			);
+		}
+
+		$extra_looks_count = max( 0, min( 10, intval( $extra_looks ) ) );
+		$extra_look_rate   = floatval( YAB_Settings::get( 'deposit', 'extra_look_rate', 50000.00 ) );
+		$extra_looks_fee   = round( $extra_looks_count * $extra_look_rate, 2 );
+
 		$base_price   = floatval( $service->base_price );
 		$location_fee = YAB_Location::calculate_fee( $location->id, $base_price );
-		$total_amount = round( $base_price + $location_fee, 2 );
+		$total_amount = round( $base_price + $location_fee + $extra_looks_fee, 2 );
 
-		// Deposit calculation from policy settings
+		// Deposit calculation from policy settings (default 50% for bridal artistry)
 		$require_deposit    = (bool) YAB_Settings::get( 'deposit', 'require_deposit', 1 );
 		$deposit_type       = YAB_Settings::get( 'deposit', 'deposit_type', 'percentage' );
-		$deposit_percentage = floatval( YAB_Settings::get( 'deposit', 'deposit_percentage', 30 ) );
+		$deposit_percentage = floatval( YAB_Settings::get( 'deposit', 'deposit_percentage', 50 ) );
 		$deposit_fixed      = floatval( YAB_Settings::get( 'deposit', 'deposit_fixed', 5000.00 ) );
 
 		$standard_deposit = 0.00;
@@ -76,6 +94,9 @@ class YAB_Pricing {
 			'location_name'        => $location->name,
 			'base_price'           => $base_price,
 			'location_fee'         => $location_fee,
+			'extra_looks'          => $extra_looks_count,
+			'extra_look_rate'      => $extra_look_rate,
+			'extra_looks_fee'      => $extra_looks_fee,
 			'total_amount'         => $total_amount,
 			'standard_deposit'     => $standard_deposit,
 			'deposit_required'     => $deposit_required,
@@ -86,6 +107,7 @@ class YAB_Pricing {
 			'currency_symbol'      => $currency_symbol,
 			'formatted_base'       => self::format_amount( $base_price, $currency_symbol ),
 			'formatted_fee'        => self::format_amount( $location_fee, $currency_symbol ),
+			'formatted_extra'      => self::format_amount( $extra_looks_fee, $currency_symbol ),
 			'formatted_total'      => self::format_amount( $total_amount, $currency_symbol ),
 			'formatted_deposit'    => self::format_amount( $deposit_required, $currency_symbol ),
 			'formatted_balance'    => self::format_amount( $balance_remaining, $currency_symbol ),

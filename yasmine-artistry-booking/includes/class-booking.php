@@ -23,9 +23,10 @@ class YAB_Booking {
 		$service_id     = absint( $data['service_id'] ?? 0 );
 		$location_id    = absint( $data['location_id'] ?? 0 );
 		$payment_choice = sanitize_key( $data['payment_choice'] ?? 'deposit' );
+		$extra_looks    = absint( $data['extra_looks'] ?? 0 );
 
 		// 1. Calculate price quote strictly on the server
-		$quote = YAB_Pricing::calculate_quote( $service_id, $location_id, $payment_choice );
+		$quote = YAB_Pricing::calculate_quote( $service_id, $location_id, $payment_choice, $extra_looks );
 		if ( is_wp_error( $quote ) ) {
 			return $quote;
 		}

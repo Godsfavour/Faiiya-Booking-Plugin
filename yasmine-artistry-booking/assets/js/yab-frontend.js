@@ -27,13 +27,12 @@
 			locationId: null,
 			locationName: '',
 			locationFee: 0,
+			extraLooks: 0,
 			date: '',
 			startTime: '',
 			quote: null,
 			paymentChoice: 'deposit'
 		};
-
-		var servicesCache = [];
 
 		// DOM Elements
 		var servicesListEl = document.getElementById('yab-services-list');
@@ -47,6 +46,80 @@
 		var btnStep3 = document.getElementById('yab-btn-to-step-3');
 		var btnStep4 = document.getElementById('yab-btn-to-step-4');
 		var btnSubmit = document.getElementById('yab-btn-submit-booking');
+
+		var servicesCache = [];
+		var locationsCache = [];
+
+		// Cache all initial location options from DOM
+		function cacheLocationsFromDom() {
+			if (!locationSelectEl) return;
+			locationsCache = [];
+			Array.from(locationSelectEl.options).forEach(function(opt) {
+				if (opt.value) {
+					locationsCache.push({
+						id: parseInt(opt.value, 10),
+						name: opt.text,
+						type: opt.getAttribute('data-type'),
+						fee: opt.getAttribute('data-fee'),
+						rawHtml: opt.innerHTML
+					});
+				}
+			});
+		}
+		cacheLocationsFromDom();
+
+		function filterLocationsForService(service) {
+			if (!locationSelectEl) return;
+			if (locationsCache.length === 0) {
+				cacheLocationsFromDom();
+			}
+			var prevVal = locationSelectEl.value || (state.locationId ? String(state.locationId) : '');
+			locationSelectEl.innerHTML = '<option value="">-- Choose your location --</option>';
+
+			var linkedIds = (service && Array.isArray(service.linked_location_ids)) ? service.linked_location_ids.map(Number) : [];
+			var eligibleLocations = (linkedIds.length === 0)
+				? locationsCache
+				: locationsCache.filter(function(loc) { return linkedIds.includes(loc.id); });
+
+			eligibleLocations.forEach(function(loc) {
+				var opt = document.createElement('option');
+				opt.value = loc.id;
+				opt.setAttribute('data-type', loc.type);
+				opt.setAttribute('data-fee', loc.fee);
+				opt.innerHTML = loc.rawHtml;
+				locationSelectEl.appendChild(opt);
+			});
+
+			// Update subtext dynamically
+			var subTextEl = document.getElementById('ya-location-sub-text');
+			if (subTextEl && service) {
+				subTextEl.textContent = 'Showing ' + eligibleLocations.length + ' available coverage zone' + (eligibleLocations.length !== 1 ? 's' : '') + ' for ' + (service.name || 'this service');
+			}
+
+			// If previous selection is still eligible, keep it; otherwise if only 1 location is assigned, select it!
+			var stillValid = eligibleLocations.some(function(loc) { return String(loc.id) === String(prevVal); });
+			if (stillValid && prevVal) {
+				locationSelectEl.value = prevVal;
+				state.locationId = parseInt(prevVal, 10);
+			} else if (eligibleLocations.length === 1) {
+				locationSelectEl.value = eligibleLocations[0].id;
+				state.locationId = eligibleLocations[0].id;
+			} else {
+				locationSelectEl.value = '';
+				state.locationId = null;
+			}
+
+			// Smoothly highlight and scroll into location bar if user needs to pick
+			var locBarEl = document.getElementById('ya-location-bar');
+			if (locBarEl && !state.locationId) {
+				locBarEl.classList.add('ya-location-bar-highlight');
+				setTimeout(function() {
+					locBarEl.classList.remove('ya-location-bar-highlight');
+				}, 1200);
+			}
+
+			checkStep1Validity();
+		}
 
 		// Set minimum selectable date to today
 		if (dateInputEl) {
@@ -77,50 +150,111 @@
 
 		function renderServices(services) {
 			if (!services || services.length === 0) {
-				servicesListEl.innerHTML = '<p class="yab-placeholder-text">No services found in this category.</p>';
+				servicesListEl.innerHTML = '<p class="yab-placeholder-text">No packages found in this category.</p>';
 				return;
 			}
 
 			var html = '';
-			services.forEach(function(svc) {
+			services.forEach(function(svc, index) {
 				var isSelected = (state.serviceId === parseInt(svc.id, 10));
-				var formattedPrice = config.currencySymbol + parseFloat(svc.base_price).toLocaleString('en-US', { minimumFractionDigits: 2 });
-				var hasImg = svc.image_url && svc.image_url.trim() !== '';
-
-				html += '<div class="yab-service-card ' + (isSelected ? 'selected' : '') + (hasImg ? ' has-image' : '') + '" data-id="' + svc.id + '">';
+				var formattedPrice = parseFloat(svc.base_price).toLocaleString('en-US', { minimumFractionDigits: 0 });
+				var depositAmount = parseFloat(svc.base_price * 0.50).toLocaleString('en-US', { minimumFractionDigits: 0 });
 				
-				if (hasImg) {
-					html += '<div class="yab-card-img-wrap">';
-					html += '<img src="' + escapeHtml(svc.image_url) + '" alt="' + escapeHtml(svc.name) + '" class="yab-card-img" loading="lazy" onerror="this.parentElement.style.display=\'none\';">';
-					html += '</div>';
+				// Styling theme variations: Alternating burgundy, terracotta, and light luxury
+				var cardVariantClass = '';
+				if (index % 3 === 1) {
+					cardVariantClass = ' ya-card-terracotta';
+				} else if (index % 3 === 2) {
+					cardVariantClass = ' ya-card-light';
 				}
 
-				html += '<div class="yab-card-body">';
-				html += '<div class="yab-card-header">';
-				html += '<h4 class="yab-card-name">' + escapeHtml(svc.name) + '</h4>';
-				html += '<span class="yab-card-price">' + formattedPrice + '</span>';
-				html += '</div>';
-				html += '<div class="yab-card-meta">';
-				html += '<span>⏱ ' + svc.duration_minutes + ' mins</span>';
+				// Check if service is flagged as featured or highest tier
+				var isFeatured = (index === 1 || svc.name.toLowerCase().indexOf('splendor') !== -1 || svc.name.toLowerCase().indexOf('popular') !== -1);
+
+				html += '<div class="ya-card' + cardVariantClass + (isSelected ? ' selected' : '') + '" data-id="' + svc.id + '">';
+				
+				if (isFeatured) {
+					html += '<span class="ya-badge-pill">Most Requested</span>';
+				}
+
 				if (svc.category_name) {
-					html += '<span class="yab-card-cat-badge">' + escapeHtml(svc.category_name) + '</span>';
+					html += '<span class="ya-category-tag">' + escapeHtml(svc.category_name) + '</span>';
 				}
-				html += '</div>';
-				if (svc.description) {
-					html += '<p class="yab-card-desc">' + escapeHtml(svc.description) + '</p>';
+
+				html += '<h3 class="ya-card-title">' + escapeHtml(svc.name) + '</h3>';
+				html += '<div class="ya-card-duration"><span>⏱ ' + svc.duration_minutes + ' Mins Dedicated Artistry</span></div>';
+
+				// Perks / Feature list parsed from description lines
+				var descText = svc.description || '';
+				var lines = descText.split('\n').filter(function(l) { return l.trim() !== ''; });
+				
+				if (lines.length > 0) {
+					html += '<ul class="ya-features-list">';
+					lines.forEach(function(line) {
+						var cleanLine = line.replace(/^[•\-\*]\s*/, '').trim();
+						if (cleanLine) {
+							html += '<li class="ya-feature-item">';
+							html += '<svg class="ya-check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+							html += '<span>' + escapeHtml(cleanLine) + '</span>';
+							html += '</li>';
+						}
+					});
+					html += '</ul>';
 				}
+
+				// Visible Assigned Location Coverage
+				var linkedIds = (svc.linked_location_ids && Array.isArray(svc.linked_location_ids)) ? svc.linked_location_ids.map(Number) : [];
+				var locRowHtml = '';
+				if (linkedIds.length > 0 && locationsCache.length > 0) {
+					var matchedNames = [];
+					linkedIds.forEach(function(lid) {
+						var matched = locationsCache.find(function(l) { return l.id === lid; });
+						if (matched) {
+							matchedNames.push(escapeHtml(matched.name.replace(/\s*\(.*\)/, '')));
+						}
+					});
+					if (matchedNames.length > 0) {
+						locRowHtml = '<div class="ya-card-locations-row"><span>📍 Coverage:</span> <strong>' + matchedNames.join(', ') + '</strong></div>';
+					} else {
+						locRowHtml = '<div class="ya-card-locations-row"><span>📍 Coverage:</span> <strong>Designated zones</strong></div>';
+					}
+				} else {
+					locRowHtml = '<div class="ya-card-locations-row"><span>📍 Coverage:</span> <strong>All zones available</strong></div>';
+				}
+				html += locRowHtml;
+
+				// Pricing & 50% Deposit Summary Block
+				html += '<div class="ya-card-pricing-block">';
+				html += '<span class="ya-price-label">Complete Investment</span>';
+				html += '<div class="ya-price-slot">';
+				html += '<span class="ya-currency">' + config.currencySymbol + '</span>';
+				html += '<span class="ya-amount">' + formattedPrice + '</span>';
 				html += '</div>';
-				html += '</div>';
+				html += '<span class="ya-card-deposit-note">50% Deposit: ' + config.currencySymbol + depositAmount + ' to reserve</span>';
+				
+				html += '<button type="button" class="ya-btn-select-card">';
+				html += isSelected ? '<span>✓ Selected Package</span>' : '<span>Select Package &rarr;</span>';
+				html += '</button>';
+
+				html += '</div>'; // .ya-card-pricing-block
+				html += '</div>'; // .ya-card
 			});
 
 			servicesListEl.innerHTML = html;
 
 			// Attach Card Click Handlers
-			var cards = servicesListEl.querySelectorAll('.yab-service-card');
+			var cards = servicesListEl.querySelectorAll('.ya-card');
 			cards.forEach(function(card) {
 				card.addEventListener('click', function() {
-					cards.forEach(function(c) { c.classList.remove('selected'); });
+					cards.forEach(function(c) {
+						c.classList.remove('selected');
+						var btn = c.querySelector('.ya-btn-select-card span');
+						if (btn) btn.innerHTML = 'Select Package &rarr;';
+					});
+
 					card.classList.add('selected');
+					var selfBtn = card.querySelector('.ya-btn-select-card span');
+					if (selfBtn) selfBtn.innerHTML = '✓ Selected Package';
 
 					var id = parseInt(card.getAttribute('data-id'), 10);
 					var found = servicesCache.find(function(s) { return parseInt(s.id, 10) === id; });
@@ -131,6 +265,9 @@
 						state.basePrice = parseFloat(found.base_price);
 						state.durationMins = parseInt(found.duration_minutes, 10);
 						document.getElementById('yab-input-service-id').value = id;
+
+						// Dynamic filter of available locations for this selected service
+						filterLocationsForService(found);
 
 						// Reset dependent steps
 						state.startTime = '';
@@ -165,6 +302,32 @@
 				var locId = parseInt(this.value, 10);
 				state.locationId = locId ? locId : null;
 				checkStep1Validity();
+			});
+		}
+
+		// Extra Looks Counter Handlers
+		var extraLooksMinusBtn = document.getElementById('ya-extra-looks-minus');
+		var extraLooksPlusBtn  = document.getElementById('ya-extra-looks-plus');
+		var extraLooksCountEl  = document.getElementById('ya-extra-looks-count');
+		var extraLooksInputEl  = document.getElementById('yab-input-extra-looks');
+
+		if (extraLooksMinusBtn && extraLooksPlusBtn && extraLooksCountEl) {
+			extraLooksMinusBtn.addEventListener('click', function() {
+				if (state.extraLooks > 0) {
+					state.extraLooks--;
+					extraLooksCountEl.textContent = state.extraLooks;
+					if (extraLooksInputEl) extraLooksInputEl.value = state.extraLooks;
+					extraLooksMinusBtn.disabled = (state.extraLooks === 0);
+				}
+			});
+
+			extraLooksPlusBtn.addEventListener('click', function() {
+				if (state.extraLooks < 10) {
+					state.extraLooks++;
+					extraLooksCountEl.textContent = state.extraLooks;
+					if (extraLooksInputEl) extraLooksInputEl.value = state.extraLooks;
+					extraLooksMinusBtn.disabled = false;
+				}
 			});
 		}
 
@@ -385,7 +548,7 @@
 			btnSubmit.disabled = true;
 
 			var mode = state.paymentChoice || 'deposit';
-			var url = config.restUrl + '/quote?service_id=' + state.serviceId + '&location_id=' + state.locationId + '&payment_choice=' + encodeURIComponent(mode);
+			var url = config.restUrl + '/quote?service_id=' + state.serviceId + '&location_id=' + state.locationId + '&extra_looks=' + (state.extraLooks || 0) + '&payment_choice=' + encodeURIComponent(mode);
 
 			fetch(url, { headers: { 'X-WP-Nonce': config.nonce } })
 			.then(function(res) { return res.json(); })
@@ -415,6 +578,10 @@
 			html += '<div class="yab-summary-row"><span class="yab-sum-label">Appointment Date & Time:</span><span class="yab-sum-val">' + state.date + ' at ' + state.startTime + '</span></div>';
 			html += '<div class="yab-summary-row"><span class="yab-sum-label">Service Address:</span><span class="yab-sum-val">' + escapeHtml(address) + '</span></div>';
 			html += '<div class="yab-summary-row"><span class="yab-sum-label">Base Service Fee:</span><span class="yab-sum-val">' + q.formatted_base + '</span></div>';
+			if (q.extra_looks && q.extra_looks > 0) {
+				var extraLooksTotalFormatted = (q.currency_symbol || '₦') + parseFloat(q.extra_looks_fee || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+				html += '<div class="yab-summary-row"><span class="yab-sum-label">Extra Looks (' + q.extra_looks + '):</span><span class="yab-sum-val">' + extraLooksTotalFormatted + '</span></div>';
+			}
 			html += '<div class="yab-summary-row"><span class="yab-sum-label">Area Travel Fee (' + escapeHtml(q.location_name) + '):</span><span class="yab-sum-val">' + q.formatted_fee + '</span></div>';
 			html += '<div class="yab-summary-row"><span class="yab-sum-label">Total Booking Amount:</span><span class="yab-sum-val highlight">' + q.formatted_total + '</span></div>';
 			
@@ -423,7 +590,7 @@
 				html += '<div class="yab-summary-row"><span class="yab-sum-label">Amount Payable Now:</span><span class="yab-sum-val" style="color:#276749; font-size:16px; font-weight:700;">' + q.formatted_deposit + '</span></div>';
 				html += '<div class="yab-summary-row"><span class="yab-sum-label">Balance Due at Appointment:</span><span class="yab-sum-val" style="color:#2b6cb0; font-weight:600;">₦0.00 (Fully Settled)</span></div>';
 			} else {
-				html += '<div class="yab-summary-row"><span class="yab-sum-label">Deposit Due Now:</span><span class="yab-sum-val" style="color:#276749; font-size:16px; font-weight:700;">' + q.formatted_deposit + '</span></div>';
+				html += '<div class="yab-summary-row"><span class="yab-sum-label">50% Deposit Due Now:</span><span class="yab-sum-val" style="color:#276749; font-size:16px; font-weight:700;">' + q.formatted_deposit + '</span></div>';
 				html += '<div class="yab-summary-row"><span class="yab-sum-label">Balance Due at Appointment:</span><span class="yab-sum-val">' + q.formatted_balance + '</span></div>';
 			}
 
@@ -496,7 +663,7 @@
 		});
 
 		var stepTitles = [
-			'Service & Area Selection',
+			'Select Your Service & Service Location',
 			'Appointment Date & Time',
 			'Contact Information & Address',
 			'Confirm & Pay Deposit'
@@ -518,6 +685,17 @@
 			if (targetPane) targetPane.classList.add('active');
 
 			// Update Header Stepper Indicators
+			var stepItems = container.querySelectorAll('.yab-step-item');
+			stepItems.forEach(function(item) {
+				var s = parseInt(item.getAttribute('data-step'), 10);
+				item.classList.remove('active', 'completed');
+				if (s === stepNumber) {
+					item.classList.add('active');
+				} else if (s < stepNumber) {
+					item.classList.add('completed');
+				}
+			});
+
 			var stepIndicators = container.querySelectorAll('.yab-step');
 			stepIndicators.forEach(function(ind) {
 				var s = parseInt(ind.getAttribute('data-step'), 10);
@@ -543,11 +721,12 @@
 				}
 			});
 
-			// Update Stepper Status Bar (Current, Remaining, and Next Preview)
+			// Update Stepper Status Bar (Current, Remaining, and Next Preview on Line 1, Title on Line 2)
 			var statusCurrentEl = document.getElementById('yab-status-current');
 			var statusTitleEl = document.getElementById('yab-status-title');
 			var statusRemainingEl = document.getElementById('yab-status-remaining');
 			var statusNextEl = document.getElementById('yab-status-next');
+			var nextDotEl = container.querySelector('.yab-next-dot');
 
 			if (statusCurrentEl) {
 				statusCurrentEl.textContent = 'Step ' + stepNumber + ' of 4';
@@ -560,9 +739,13 @@
 				if (remaining > 0) {
 					statusRemainingEl.textContent = remaining + ' step' + (remaining > 1 ? 's' : '') + ' remaining';
 					statusRemainingEl.style.display = 'inline-block';
+					if (statusNextEl) statusNextEl.style.display = 'inline-block';
+					if (nextDotEl) nextDotEl.style.display = 'inline-block';
 				} else {
 					statusRemainingEl.textContent = 'Final Step';
 					statusRemainingEl.style.display = 'inline-block';
+					if (statusNextEl) statusNextEl.style.display = 'none';
+					if (nextDotEl) nextDotEl.style.display = 'none';
 				}
 			}
 			if (statusNextEl && nextStepLabels[stepNumber - 1]) {
@@ -588,6 +771,7 @@
 			var payload = {
 				service_id: state.serviceId,
 				location_id: state.locationId,
+				extra_looks: state.extraLooks || 0,
 				appointment_date: state.date,
 				start_time: state.startTime,
 				customer_name: name,

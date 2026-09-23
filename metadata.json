@@ -1,6 +1,8 @@
 {
-  "name": "Yasmine Booking - WordPress Plugin Builder & Simulator",
+  "name": "Remix Yasmine Booking - WordPress Plugin Builder \u0026 Simulator",
   "description": "An interactive designer, live simulator, and code exporter for Yasmine Booking - a modular WordPress booking plugin with Google Calendar, Paystack, WhatsApp Business, and Twilio SMS integrations.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

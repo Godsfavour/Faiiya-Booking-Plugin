@@ -132,10 +132,11 @@ class YAB_Settings {
 
 			case 'deposit':
 				return array(
-					'deposit_type'       => 'percentage', // 'percentage' or 'fixed'
-					'deposit_percentage' => 30,           // 30% deposit
+					'deposit_type'       => 'percentage', // 'percentage', 'fixed', or 'full'
+					'deposit_percentage' => 50,           // 50% deposit
 					'deposit_fixed'      => 5000.00,      // ₦5,000 fixed deposit
 					'require_deposit'    => 1,            // 1 = required, 0 = optional
+					'extra_look_rate'    => 50000.00,     // ₦50,000 per extra bridal look
 				);
 
 			case 'paystack':
@@ -212,10 +213,11 @@ class YAB_Settings {
 			case 'pricing':
 				$type = sanitize_key( $input['deposit_type'] ?? 'percentage' );
 				$sanitized['deposit_type']       = in_array( $type, array( 'percentage', 'fixed', 'full' ), true ) ? $type : 'percentage';
-				$sanitized['deposit_percentage'] = floatval( $input['deposit_percentage'] ?? $input['deposit_value'] ?? 30 );
+				$sanitized['deposit_percentage'] = floatval( $input['deposit_percentage'] ?? $input['deposit_value'] ?? 50 );
 				$sanitized['deposit_fixed']      = floatval( $input['deposit_fixed'] ?? $input['deposit_value'] ?? 5000.00 );
 				$sanitized['deposit_value']      = floatval( $input['deposit_value'] ?? $sanitized['deposit_percentage'] );
 				$sanitized['require_deposit']    = ! empty( $input['require_deposit'] ) ? 1 : 0;
+				$sanitized['extra_look_rate']    = max( 0.00, floatval( $input['extra_look_rate'] ?? 50000.00 ) );
 				break;
 
 			case 'paystack':

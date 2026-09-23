@@ -7,6 +7,7 @@ export interface Service {
   depositValue: number;
   description: string;
   imageUrl?: string;
+  assignedLocationIds?: string[]; // IDs of linked locations from categoryConfig.options (if empty/undefined, all locations apply)
 }
 
 export interface Booking {

@@ -1,6 +1,7 @@
 <?php
 /**
- * Frontend multi-step home-service booking interface.
+ * Frontend multi-step luxury bridal & home-service booking interface.
+ * Version 2.0 Luxury Bridal Atelier Edition
  *
  * @package Yasmine_Artistry_Booking
  */
@@ -9,46 +10,74 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$categories = YAB_Category::get_all( array( 'active_only' => true ) );
-$locations  = YAB_Location::get_all( array( 'active_only' => true ) );
-$currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
+$categories       = YAB_Category::get_all( array( 'active_only' => true ) );
+$locations        = YAB_Location::get_all( array( 'active_only' => true ) );
+$currency         = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
+$business_name    = YAB_Settings::get( 'general', 'business_name', 'Yasmine Artistry' );
+$deposit_pct      = YAB_Settings::get( 'deposit', 'deposit_percentage', 50 );
+$extra_look_rate  = YAB_Settings::get( 'deposit', 'extra_look_rate', 50000.00 );
 ?>
-<div id="yab-booking-app" class="yab-booking-container">
+<div id="yab-booking-app" class="yab-booking-container yab-luxury-wrapper">
+
+	<!-- Luxury Bridal Atelier Header -->
+	<header class="ya-hero-header">
+		<span class="ya-brand-eyebrow"><?php echo esc_html( $business_name ); ?> • BEAUTY SALON &amp; LUXURY STUDIO</span>
+		<h2 class="ya-hero-title"><?php esc_html_e( 'Services & Price Menu', 'yasmine-artistry-booking' ); ?></h2>
+		<p class="ya-hero-subtitle"><?php esc_html_e( 'Tailored beauty, hair, and aesthetic services for everyday luxury and special occasions. Select your service package and reserve your appointment', 'yasmine-artistry-booking' ); ?></p>
+	</header>
 
 	<!-- Progress Header -->
 	<div class="yab-stepper-wrapper">
 		<div class="yab-progress-bar">
-			<div class="yab-step active" data-step="1">
-				<span class="yab-step-number">1</span>
-				<span class="yab-step-title"><?php esc_html_e( 'Service & Area', 'yasmine-artistry-booking' ); ?></span>
+			<div class="yab-step-item" data-step="1">
+				<div class="yab-step active" data-step="1">
+					<span class="yab-step-number">1</span>
+					<span class="yab-step-title"><?php esc_html_e( 'Service & Location', 'yasmine-artistry-booking' ); ?></span>
+				</div>
+				<div class="yab-step-arrow">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+				</div>
 			</div>
-			<div class="yab-step-arrow">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+			<div class="yab-step-item" data-step="2">
+				<div class="yab-step" data-step="2">
+					<span class="yab-step-number">2</span>
+					<span class="yab-step-title"><?php esc_html_e( 'Date & Time', 'yasmine-artistry-booking' ); ?></span>
+				</div>
+				<div class="yab-step-arrow">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+				</div>
 			</div>
-			<div class="yab-step" data-step="2">
-				<span class="yab-step-number">2</span>
-				<span class="yab-step-title"><?php esc_html_e( 'Date & Time', 'yasmine-artistry-booking' ); ?></span>
+			<div class="yab-step-item" data-step="3">
+				<div class="yab-step" data-step="3">
+					<span class="yab-step-number">3</span>
+					<span class="yab-step-title"><?php esc_html_e( 'Client Details', 'yasmine-artistry-booking' ); ?></span>
+				</div>
+				<div class="yab-step-arrow">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+				</div>
 			</div>
-			<div class="yab-step-arrow">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-			</div>
-			<div class="yab-step" data-step="3">
-				<span class="yab-step-number">3</span>
-				<span class="yab-step-title"><?php esc_html_e( 'Your Details', 'yasmine-artistry-booking' ); ?></span>
-			</div>
-			<div class="yab-step-arrow">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-			</div>
-			<div class="yab-step" data-step="4">
-				<span class="yab-step-number">4</span>
-				<span class="yab-step-title"><?php esc_html_e( 'Confirm & Pay', 'yasmine-artistry-booking' ); ?></span>
+			<div class="yab-step-item" data-step="4">
+				<div class="yab-step" data-step="4">
+					<span class="yab-step-number">4</span>
+					<span class="yab-step-title"><?php esc_html_e( 'Confirm & Pay', 'yasmine-artistry-booking' ); ?></span>
+				</div>
 			</div>
 		</div>
+
+		<!-- Breadcrumbs & Step Title Section (Two Distinct Lines) -->
 		<div class="yab-step-status-bar" id="yab-step-status-bar">
-			<span class="yab-status-badge-count" id="yab-status-current">Step 1 of 4</span>
-			<span class="yab-status-title" id="yab-status-title"><?php esc_html_e( 'Service & Area Selection', 'yasmine-artistry-booking' ); ?></span>
-			<span class="yab-status-remaining-badge" id="yab-status-remaining">3 steps remaining</span>
-			<span class="yab-status-next-label" id="yab-status-next">Next: Date & Time &rarr;</span>
+			<!-- Line 1: Breadcrumbs -->
+			<div class="yab-status-breadcrumbs-row">
+				<span class="yab-status-badge-count" id="yab-status-current">Step 1 of 4</span>
+				<span class="yab-status-dot">•</span>
+				<span class="yab-status-remaining-badge" id="yab-status-remaining">3 steps remaining</span>
+				<span class="yab-status-dot yab-next-dot">•</span>
+				<span class="yab-status-next-label" id="yab-status-next">Next: Date &amp; Time &rarr;</span>
+			</div>
+			<!-- Line 2: Current Step Title (Bold) -->
+			<div class="yab-status-title-row">
+				<h3 class="yab-status-title" id="yab-status-title"><?php esc_html_e( 'Select Your Service & Service Location', 'yasmine-artistry-booking' ); ?></h3>
+			</div>
 		</div>
 	</div>
 
@@ -60,12 +89,11 @@ $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
 
 		<!-- STEP 1: SERVICE & LOCATION -->
 		<section class="yab-step-pane active" id="yab-step-1">
-			<h3 class="yab-pane-title"><?php esc_html_e( 'Select Your Home Service & Location', 'yasmine-artistry-booking' ); ?></h3>
-			<p class="yab-pane-subtitle"><?php esc_html_e( 'Choose the beauty service you desire and your coverage zone.', 'yasmine-artistry-booking' ); ?></p>
+			<h3 class="yab-pane-title"><?php esc_html_e( 'Select Your Service & Service Location', 'yasmine-artistry-booking' ); ?></h3>
 
 			<!-- Category Filter Tabs: Specific categories first, "All Services" last -->
 			<?php if ( ! empty( $categories ) ) : ?>
-				<div class="yab-category-tabs">
+				<div class="yab-category-tabs ya-luxury-tabs">
 					<?php foreach ( $categories as $cat ) : ?>
 						<button type="button" class="yab-tab-btn" data-category="<?php echo esc_attr( $cat->id ); ?>">
 							<span class="yab-cat-dot">✦</span>
@@ -73,39 +101,69 @@ $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
 						</button>
 					<?php endforeach; ?>
 					<button type="button" class="yab-tab-btn active" data-category="all">
-						<span><?php esc_html_e( 'All Services', 'yasmine-artistry-booking' ); ?></span>
+						<span><?php esc_html_e( 'All Packages', 'yasmine-artistry-booking' ); ?></span>
 					</button>
 				</div>
 			<?php endif; ?>
 
-			<!-- Service Selection Cards -->
+			<!-- Service Selection Cards Grid (Dynamically Populated) -->
 			<div class="yab-form-group">
-				<label class="yab-label"><?php esc_html_e( 'Available Services', 'yasmine-artistry-booking' ); ?> <span class="req">*</span></label>
-				<div id="yab-services-list" class="yab-cards-grid">
-					<div class="yab-loading-placeholder"><?php esc_html_e( 'Loading service catalog...', 'yasmine-artistry-booking' ); ?></div>
+				<label class="yab-label ya-step-section-heading">
+					<?php esc_html_e( '1. Select Your Service Package', 'yasmine-artistry-booking' ); ?> <span class="req">*</span>
+				</label>
+				<div id="yab-services-list" class="ya-grid-container yab-cards-grid">
+					<div class="yab-loading-placeholder"><?php esc_html_e( 'Loading luxury service catalog...', 'yasmine-artistry-booking' ); ?></div>
 				</div>
 				<input type="hidden" name="service_id" id="yab-input-service-id" required>
 			</div>
 
-			<!-- Location Selection -->
-			<div class="yab-form-group">
-				<label for="yab-select-location" class="yab-label"><?php esc_html_e( 'Your Location / Coverage Area', 'yasmine-artistry-booking' ); ?> <span class="req">*</span></label>
-				<select name="location_id" id="yab-select-location" class="yab-select" required>
-					<option value=""><?php esc_html_e( '-- Choose your area --', 'yasmine-artistry-booking' ); ?></option>
-					<?php foreach ( $locations as $loc ) : ?>
-						<option value="<?php echo esc_attr( $loc->id ); ?>" data-type="<?php echo esc_attr( $loc->fee_type ); ?>" data-fee="<?php echo esc_attr( $loc->fee_amount ); ?>">
-							<?php
-							$fee_text = ( 'percentage' === $loc->fee_type )
-								? sprintf( '+%0.1f%% area surcharge', $loc->fee_amount )
-								: ( $loc->fee_amount > 0 ? sprintf( '+%s%0.2f travel fee', $currency, $loc->fee_amount ) : 'Free travel zone' );
-							echo esc_html( $loc->name . ' (' . $fee_text . ')' );
-							?>
-						</option>
-					<?php endforeach; ?>
-				</select>
+			<!-- Location Selection Bar (Under Services - Populates Dynamically upon Selection) -->
+			<div class="ya-location-bar" id="ya-location-bar">
+				<div class="ya-location-info">
+					<h4 class="ya-location-heading"><?php esc_html_e( '2. Select Service Location', 'yasmine-artistry-booking' ); ?> <span class="req">*</span></h4>
+					<span class="ya-location-sub" id="ya-location-sub-text"><?php esc_html_e( 'Select your service above to view available coverage locations & travel rates', 'yasmine-artistry-booking' ); ?></span>
+				</div>
+				<div class="ya-location-select-wrap">
+					<select name="location_id" id="yab-select-location" class="yab-select" required>
+						<option value=""><?php esc_html_e( '-- Choose your location --', 'yasmine-artistry-booking' ); ?></option>
+						<?php foreach ( $locations as $loc ) : ?>
+							<option value="<?php echo esc_attr( $loc->id ); ?>" data-type="<?php echo esc_attr( $loc->fee_type ); ?>" data-fee="<?php echo esc_attr( $loc->fee_amount ); ?>">
+								<?php
+								$fee_text = ( 'percentage' === $loc->fee_type )
+									? sprintf( '+%0.1f%% area surcharge', $loc->fee_amount )
+									: ( $loc->fee_amount > 0 ? sprintf( '+%s%0.2f travel fee', $currency, $loc->fee_amount ) : 'Standard coverage (included)' );
+								echo esc_html( $loc->name . ' (' . $fee_text . ')' );
+								?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
 			</div>
 
-			<div class="yab-actions">
+			<!-- Extra Looks Counter (Customizable from Admin Deposit Settings) -->
+			<div class="ya-extra-looks-box" id="ya-extra-looks-box">
+				<div class="ya-extra-looks-text">
+					<span class="ya-extra-looks-title"><?php esc_html_e( 'Add Extra Bridal Looks / Outfit Changes?', 'yasmine-artistry-booking' ); ?></span>
+					<span class="ya-extra-looks-rate" id="ya-extra-looks-rate-text">
+						<?php
+						printf(
+							/* translators: 1: Currency, 2: Rate */
+							esc_html__( '+%1$s%2$s per additional bridal look change', 'yasmine-artistry-booking' ),
+							esc_html( $currency ),
+							esc_html( number_format( floatval( $extra_look_rate ), 2 ) )
+						);
+						?>
+					</span>
+				</div>
+				<div class="ya-counter-controls">
+					<button type="button" class="ya-counter-btn" id="ya-extra-looks-minus" disabled aria-label="Decrease extra looks">&minus;</button>
+					<span class="ya-counter-value" id="ya-extra-looks-count">0</span>
+					<button type="button" class="ya-counter-btn" id="ya-extra-looks-plus" aria-label="Increase extra looks">&plus;</button>
+					<input type="hidden" name="extra_looks" id="yab-input-extra-looks" value="0">
+				</div>
+			</div>
+
+			<div class="yab-actions" style="margin-top: 30px;">
 				<span></span>
 				<button type="button" class="yab-btn yab-btn-primary" id="yab-btn-to-step-2" disabled>
 					<?php esc_html_e( 'Next: Choose Date & Time →', 'yasmine-artistry-booking' ); ?>
@@ -231,8 +289,8 @@ $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
 					<label class="yab-payment-option selected" id="yab-opt-deposit-label">
 						<input type="radio" name="yab_payment_mode" value="deposit" id="yab-pay-deposit" checked>
 						<div class="yab-payment-option-body">
-							<span class="yab-opt-title"><?php esc_html_e( 'Pay Deposit Now', 'yasmine-artistry-booking' ); ?></span>
-							<span class="yab-opt-desc" id="yab-deposit-desc"><?php esc_html_e( 'Lock and secure your appointment slot now. Pay the remaining balance upon service completion.', 'yasmine-artistry-booking' ); ?></span>
+							<span class="yab-opt-title"><?php esc_html_e( 'Pay 50% Deposit Now', 'yasmine-artistry-booking' ); ?></span>
+							<span class="yab-opt-desc" id="yab-deposit-desc"><?php esc_html_e( 'Lock and secure your appointment slot now. Pay the remaining 50% balance upon service completion.', 'yasmine-artistry-booking' ); ?></span>
 							<span class="yab-opt-price" id="yab-badge-deposit-amt">--</span>
 						</div>
 					</label>

@@ -163,6 +163,13 @@ $webhook_url = rest_url( 'yab/v1/paystack-webhook' );
 									<p class="description"><?php esc_html_e( 'If percentage mode, 50 = 50% deposit required via Paystack. Note: When a deposit is required, customers also have the option to pay their full balance directly at checkout.', 'yasmine-artistry-booking' ); ?></p>
 								</td>
 							</tr>
+							<tr>
+								<th scope="row"><label for="extra_look_rate"><?php esc_html_e( 'Extra Bridal Look Rate (₦)', 'yasmine-artistry-booking' ); ?></label></th>
+								<td>
+									<input type="number" step="1000" name="extra_look_rate" id="extra_look_rate" class="regular-text" value="<?php echo esc_attr( YAB_Settings::get( 'pricing', 'extra_look_rate', 50000 ) ); ?>">
+									<p class="description"><?php esc_html_e( 'Additional fee charged per extra bridal look selected on the booking price card (e.g. ₦50,000). 100% customizable.', 'yasmine-artistry-booking' ); ?></p>
+								</td>
+							</tr>
 						</table>
 					</div>
 				</div>

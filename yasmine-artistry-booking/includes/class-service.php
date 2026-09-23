@@ -68,6 +68,12 @@ class YAB_Service {
 		}
 
 		$id = $wpdb->insert_id;
+
+		// Link locations if provided
+		if ( isset( $data['location_ids'] ) && is_array( $data['location_ids'] ) ) {
+			self::set_linked_locations( $id, $data['location_ids'] );
+		}
+
 		YAB_Logger::log( 'service_created', sprintf( 'Service "%s" created (ID: %d, Category: %d, Price: %0.2f)', $name, $id, $category_id, $base_price ) );
 
 		return $id;
@@ -162,6 +168,11 @@ class YAB_Service {
 			return new WP_Error( 'db_error', __( 'Failed to update service.', 'yasmine-artistry-booking' ) );
 		}
 
+		// Update linked locations if provided
+		if ( isset( $data['location_ids'] ) && is_array( $data['location_ids'] ) ) {
+			self::set_linked_locations( $id, $data['location_ids'] );
+		}
+
 		YAB_Logger::log( 'service_updated', sprintf( 'Service ID %d updated', $id ) );
 		return true;
 	}
@@ -198,6 +209,10 @@ class YAB_Service {
 			);
 		}
 
+		// Clean up linked locations
+		$junction_table = YAB_Database::table( 'service_locations' );
+		$wpdb->delete( $junction_table, array( 'service_id' => $id ), array( '%d' ) );
+
 		$table   = YAB_Database::table( 'services' );
 		$deleted = $wpdb->delete( $table, array( 'id' => $id ), array( '%d' ) );
 
@@ -210,7 +225,7 @@ class YAB_Service {
 	}
 
 	/**
-	 * Retrieve a single service by ID.
+	 * Retrieve a single service by ID with linked locations attached.
 	 *
 	 * @param int $id
 	 * @return object|null
@@ -220,7 +235,84 @@ class YAB_Service {
 		$table = YAB_Database::table( 'services' );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", absint( $id ) ) );
+		$service = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", absint( $id ) ) );
+		if ( $service ) {
+			$service->linked_location_ids = self::get_linked_location_ids( $service->id );
+		}
+		return $service;
+	}
+
+	/**
+	 * Get array of location IDs linked to this service.
+	 * If none are explicitly linked, returns an empty array (meaning all locations apply).
+	 *
+	 * @param int $service_id
+	 * @return array Array of integer location IDs.
+	 */
+	public static function get_linked_location_ids( $service_id ) {
+		global $wpdb;
+		$table = YAB_Database::table( 'service_locations' );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$results = $wpdb->get_col(
+			$wpdb->prepare( "SELECT location_id FROM {$table} WHERE service_id = %d", absint( $service_id ) )
+		);
+
+		return array_map( 'absint', (array) $results );
+	}
+
+	/**
+	 * Update or set linked locations for a service.
+	 *
+	 * @param int $service_id
+	 * @param array $location_ids
+	 * @return bool
+	 */
+	public static function set_linked_locations( $service_id, $location_ids = array() ) {
+		global $wpdb;
+		$service_id = absint( $service_id );
+		$table      = YAB_Database::table( 'service_locations' );
+
+		// Delete existing associations
+		$wpdb->delete( $table, array( 'service_id' => $service_id ), array( '%d' ) );
+
+		if ( empty( $location_ids ) ) {
+			return true;
+		}
+
+		$now = current_time( 'mysql' );
+		foreach ( $location_ids as $loc_id ) {
+			$loc_id = absint( $loc_id );
+			if ( $loc_id > 0 ) {
+				$wpdb->insert(
+					$table,
+					array(
+						'service_id'  => $service_id,
+						'location_id' => $loc_id,
+						'created_at'  => $now,
+					),
+					array( '%d', '%d', '%s' )
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if a location is valid / permitted for a specific service.
+	 *
+	 * @param int $service_id
+	 * @param int $location_id
+	 * @return bool
+	 */
+	public static function is_location_available( $service_id, $location_id ) {
+		$linked = self::get_linked_location_ids( $service_id );
+		// If no specific locations linked, service is universally available across all active locations
+		if ( empty( $linked ) ) {
+			return true;
+		}
+		return in_array( absint( $location_id ), $linked, true );
 	}
 
 	/**
@@ -256,11 +348,19 @@ class YAB_Service {
 
 		if ( ! empty( $values ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			return $wpdb->get_results( $wpdb->prepare( $query, $values ) );
+			$services = $wpdb->get_results( $wpdb->prepare( $query, $values ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$services = $wpdb->get_results( $query );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_results( $query );
+		if ( ! empty( $services ) ) {
+			foreach ( $services as $s ) {
+				$s->linked_location_ids = self::get_linked_location_ids( $s->id );
+			}
+		}
+
+		return $services;
 	}
 
 	/**

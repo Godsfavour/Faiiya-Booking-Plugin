@@ -42,7 +42,7 @@
 
 /* Horizontal Progress Stepper with Arrows & Remaining Steps */
 .yab-stepper-wrapper {
-	margin-bottom: 30px;
+	margin-bottom: 26px;
 	background: #f8fafc;
 	border: 1px solid var(--yab-border);
 	border-radius: var(--yab-radius);
@@ -52,21 +52,22 @@
 
 .yab-progress-bar {
 	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
-	justify-content: space-between;
-	gap: 6px;
-	margin-bottom: 12px;
-	overflow-x: auto;
-	scrollbar-width: none;
-	-webkit-overflow-scrolling: touch;
+	gap: 10px 14px;
+	margin-bottom: 14px;
 }
 
-.yab-progress-bar::-webkit-scrollbar {
-	display: none;
+.yab-step-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	white-space: nowrap;
 }
 
 .yab-step {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	font-size: 13px;
@@ -97,6 +98,7 @@
 	font-size: 12px;
 	font-weight: 700;
 	transition: all 0.25s ease;
+	flex-shrink: 0;
 }
 
 .yab-step.active .yab-step-number {
@@ -111,57 +113,90 @@
 }
 
 .yab-step-arrow {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	color: #cbd5e1;
 	transition: color 0.25s ease;
 	flex-shrink: 0;
 }
 
+.yab-step-item.active .yab-step-arrow,
 .yab-step-arrow.active {
 	color: var(--yab-primary);
 }
 
+.yab-step-item.completed .yab-step-arrow,
 .yab-step-arrow.completed {
 	color: var(--yab-success);
 }
 
+/* Step Status & Breadcrumbs Bar (2 Distinct Lines) */
 .yab-step-status-bar {
 	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding-top: 14px;
+	border-top: 1px solid #e2e8f0;
+}
+
+/* Line 1: Breadcrumbs */
+.yab-status-breadcrumbs-row {
+	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 8px;
-	padding-top: 10px;
-	border-top: 1px solid #e2e8f0;
 	font-size: 12px;
+	color: var(--yab-text-muted);
 }
 
 .yab-status-badge-count {
 	font-weight: 700;
 	color: var(--yab-primary);
 	background: #e0e7ff;
-	padding: 2px 8px;
-	border-radius: 12px;
+	padding: 3px 10px;
+	border-radius: 9999px;
+	font-size: 11px;
+	letter-spacing: 0.02em;
 }
 
-.yab-status-title {
-	font-weight: 600;
-	color: var(--yab-text);
+.yab-status-dot {
+	color: #94a3b8;
+	font-size: 12px;
 }
 
 .yab-status-remaining-badge {
 	font-weight: 700;
 	color: #92400e;
 	background: #fef3c7;
-	padding: 2px 8px;
-	border-radius: 12px;
+	padding: 3px 10px;
+	border-radius: 9999px;
 	border: 1px solid #fde68a;
+	font-size: 11px;
 }
 
 .yab-status-next-label {
 	color: var(--yab-text-muted);
 	font-weight: 600;
+	font-size: 12px;
+}
+
+/* Line 2: Current Step Title (Bold) */
+.yab-status-title-row {
+	margin-top: 2px;
+}
+
+.yab-status-title {
+	font-size: 18px;
+	font-weight: 800;
+	color: var(--yab-text);
+	margin: 0;
+	line-height: 1.35;
+	letter-spacing: -0.015em;
+}
+
+/* Hide redundant duplicate heading in panes since status bar has the bold title on line 2 */
+.yab-step-pane > .yab-pane-title {
+	display: none;
 }
 
 /* Step Panes with Smooth Lazy Transitions */
@@ -354,6 +389,31 @@
 	border-radius: 10px;
 }
 
+.yab-card-locations {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #4338ca;
+	background: #eef2ff;
+	border: 1px solid #c7d2fe;
+	padding: 3px 8px;
+	border-radius: 8px;
+	margin-bottom: 8px;
+	line-height: 1.3;
+}
+
+.yab-card-locations.all-active {
+	color: #15803d;
+	background: #f0fdf4;
+	border-color: #bbf7d0;
+}
+
+.yab-card-locations .yab-loc-pin {
+	font-size: 11px;
+}
+
 .yab-card-desc {
 	font-size: 13px;
 	color: #475569;
@@ -362,154 +422,215 @@
 }
 
 /* Interactive Calendar Widget in Step 2 */
-.yab-calendar-widget {
-	background: #ffffff;
-	border: 1.5px solid var(--yab-border);
-	border-radius: var(--yab-radius);
-	padding: 20px;
-	box-shadow: var(--yab-shadow-sm);
-	margin-bottom: 20px;
+.yab-booking-container .yab-calendar-widget {
+	background: #ffffff !important;
+	border: 1px solid #e2e8f0 !important;
+	border-radius: var(--yab-radius) !important;
+	padding: 22px !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+	margin-bottom: 22px !important;
+	box-sizing: border-box !important;
 }
 
-.yab-cal-nav {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 14px;
+.yab-booking-container .yab-cal-nav {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	margin-bottom: 16px !important;
+	padding: 0 2px !important;
 }
 
-.yab-cal-month-title {
-	font-size: 15px;
-	font-weight: 700;
-	color: var(--yab-text);
+.yab-booking-container .yab-cal-month-title {
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	color: var(--yab-text) !important;
+	letter-spacing: -0.01em !important;
 }
 
-.yab-cal-btn {
-	background: #f1f5f9;
-	border: 1px solid var(--yab-border);
-	border-radius: 8px;
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	color: var(--yab-text);
-	transition: all 0.2s ease;
+.yab-booking-container button.yab-cal-btn,
+.yab-booking-container .yab-cal-btn {
+	background: #f8fafc !important;
+	border: 1px solid #e2e8f0 !important;
+	border-radius: 8px !important;
+	width: 34px !important;
+	height: 34px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	color: #475569 !important;
+	padding: 0 !important;
+	transition: all 0.2s ease !important;
+	box-shadow: none !important;
 }
 
-.yab-cal-btn:hover {
-	background: #e2e8f0;
-	border-color: #cbd5e1;
+.yab-booking-container button.yab-cal-btn:hover,
+.yab-booking-container .yab-cal-btn:hover {
+	background: #f1f5f9 !important;
+	border-color: #cbd5e1 !important;
+	color: var(--yab-text) !important;
+	transform: translateY(-1px) !important;
 }
 
-.yab-cal-weekdays {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 4px;
-	margin-bottom: 8px;
-	text-align: center;
-	font-size: 12px;
-	font-weight: 700;
-	color: var(--yab-text-muted);
+.yab-booking-container .yab-cal-weekdays {
+	display: grid !important;
+	grid-template-columns: repeat(7, 1fr) !important;
+	gap: 6px !important;
+	margin-bottom: 8px !important;
+	text-align: center !important;
+	padding: 0 2px !important;
 }
 
-.yab-cal-days {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 4px;
+.yab-booking-container .yab-cal-weekdays span {
+	display: block !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	color: #64748b !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.05em !important;
+	padding: 4px 0 !important;
+	text-align: center !important;
 }
 
-.yab-cal-day {
-	height: 38px;
-	border: 1px solid transparent;
-	border-radius: 8px;
-	background: transparent;
-	font-size: 13px;
-	font-weight: 600;
-	color: var(--yab-text);
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.18s ease;
+.yab-booking-container .yab-cal-days {
+	display: grid !important;
+	grid-template-columns: repeat(7, 1fr) !important;
+	gap: 6px !important;
+	padding: 2px !important;
 }
 
-.yab-cal-day.empty {
-	cursor: default;
+/* Individual Day Cell */
+.yab-booking-container .yab-cal-day,
+.yab-booking-container button.yab-cal-day {
+	height: 40px !important;
+	min-height: 40px !important;
+	width: 100% !important;
+	border-radius: 8px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	text-align: center !important;
+	outline: none !important;
+	transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	line-height: 1 !important;
 }
 
-.yab-cal-day:not(.empty):not(.past):hover {
-	background: #f1f5f9;
-	border-color: #cbd5e1;
+/* Empty filler day cell */
+.yab-booking-container .yab-cal-day.empty,
+.yab-booking-container div.yab-cal-day.empty {
+	background: transparent !important;
+	border: 1px solid transparent !important;
+	cursor: default !important;
+	pointer-events: none !important;
+	box-shadow: none !important;
 }
 
-.yab-cal-day.today {
-	border-color: var(--yab-primary);
-	color: var(--yab-primary);
-	font-weight: 700;
+/* Light color & subtle border around each selectable date */
+.yab-booking-container button.yab-cal-day:not(.empty):not(.past) {
+	background: #ffffff !important;
+	border: 1px solid #e2e8f0 !important;
+	color: #1e293b !important;
+	cursor: pointer !important;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
 }
 
-.yab-cal-day.selected {
+/* Hover ("over") effect */
+.yab-booking-container button.yab-cal-day:not(.empty):not(.past):hover {
+	background: #f1f5f9 !important;
+	border-color: #94a3b8 !important;
+	color: #0f172a !important;
+	transform: translateY(-2px) !important;
+	box-shadow: 0 4px 10px -1px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Today indicator */
+.yab-booking-container button.yab-cal-day.today:not(.selected) {
+	border-color: #60a5fa !important;
+	background: #f0f9ff !important;
+	color: #0284c7 !important;
+	font-weight: 700 !important;
+}
+
+/* Select effect */
+.yab-booking-container button.yab-cal-day.selected {
 	background: var(--yab-primary) !important;
 	color: #ffffff !important;
 	border-color: var(--yab-primary) !important;
-	box-shadow: 0 2px 8px rgba(26, 54, 93, 0.3);
+	font-weight: 700 !important;
+	transform: translateY(-1px) scale(1.02) !important;
+	box-shadow: 0 4px 14px rgba(26, 54, 93, 0.3) !important;
 }
 
-.yab-cal-day.past {
-	color: #cbd5e1;
-	cursor: not-allowed;
-	text-decoration: line-through;
-	opacity: 0.6;
+/* Past / disabled dates */
+.yab-booking-container button.yab-cal-day.past {
+	background: #f8fafc !important;
+	border: 1px solid #f1f5f9 !important;
+	color: #cbd5e1 !important;
+	cursor: not-allowed !important;
+	text-decoration: line-through !important;
+	opacity: 0.6 !important;
+	box-shadow: none !important;
 }
 
-.yab-cal-selected-display {
-	margin-top: 14px;
-	padding-top: 10px;
-	border-top: 1px solid #f1f5f9;
-	font-size: 13px;
-	color: var(--yab-text-muted);
+.yab-booking-container .yab-cal-selected-display {
+	margin-top: 16px !important;
+	padding: 10px 14px !important;
+	background: #f8fafc !important;
+	border: 1px solid #e2e8f0 !important;
+	border-radius: 8px !important;
+	font-size: 13px !important;
+	color: var(--yab-text-muted) !important;
 }
 
 .yab-selected-tag {
-	color: var(--yab-success);
-	font-weight: 600;
+	color: var(--yab-success) !important;
+	font-weight: 600 !important;
 }
 
 /* Slots Grid */
-.yab-slots-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-	gap: 10px;
-	min-height: 50px;
+.yab-booking-container .yab-slots-grid {
+	display: grid !important;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+	gap: 10px !important;
+	min-height: 50px !important;
 }
 
+.yab-booking-container button.yab-slot-btn,
 .yab-slot-btn {
-	border: 1px solid var(--yab-border);
-	background: #ffffff;
-	padding: 10px 8px;
-	border-radius: var(--yab-radius-sm);
-	text-align: center;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	color: var(--yab-text);
-	transition: all 0.2s ease;
-	box-shadow: var(--yab-shadow-sm);
+	border: 1px solid #e2e8f0 !important;
+	background: #ffffff !important;
+	padding: 10px 8px !important;
+	border-radius: var(--yab-radius-sm) !important;
+	text-align: center !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	color: #1e293b !important;
+	transition: all 0.2s ease !important;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+	margin: 0 !important;
 }
 
+.yab-booking-container button.yab-slot-btn:hover,
 .yab-slot-btn:hover {
-	border-color: var(--yab-primary);
-	background: #f8fafc;
-	transform: translateY(-1px);
+	border-color: #94a3b8 !important;
+	background: #f8fafc !important;
+	transform: translateY(-1px) !important;
+	box-shadow: 0 3px 8px -1px rgba(15, 23, 42, 0.08) !important;
 }
 
+.yab-booking-container button.yab-slot-btn.selected,
 .yab-slot-btn.selected {
-	background: var(--yab-primary);
-	color: #ffffff;
-	border-color: var(--yab-primary);
-	box-shadow: 0 2px 8px rgba(26, 54, 93, 0.25);
+	background: var(--yab-primary) !important;
+	color: #ffffff !important;
+	border-color: var(--yab-primary) !important;
+	font-weight: 700 !important;
+	box-shadow: 0 4px 12px rgba(26, 54, 93, 0.25) !important;
 }
 
 /* Summary Card & Payment Options */
@@ -709,3 +830,743 @@
 	color: var(--yab-text-muted);
 	margin-bottom: 20px;
 }
+
+/* ========================================================
+   YASMINE ARTISTRY V2.0 - LUXURY DARK DESIGN SYSTEM
+   Deep Velvet Black/Burgundy (#120406, #1C070A), Warm Gold Foil (#D4AF37),
+   Champagne/Ivory Text (#FAF4EB, #D5C7B8), Polished Glass & Gold Borders
+   ======================================================== */
+
+.yab-luxury-wrapper {
+	--bg-rich: #140507;
+	--bg-canvas: #120406;
+	--bg-card-burgundy: #22090C;
+	--bg-card-terracotta: #351014;
+	--bg-card-deep: #190507;
+	--bg-soft-cream: #22090C;
+	--bg-card-light: #2A0D11;
+	--border-cream: rgba(212, 175, 55, 0.22);
+	--border-burgundy: rgba(212, 175, 55, 0.28);
+	--border-gold: rgba(212, 175, 55, 0.5);
+	--gold-foil: #D4AF37;
+	--gold-light: #F3E5AB;
+	--text-burgundy: #FAF4EB;
+	--text-light: #FAF4EB;
+	--text-muted: #B8A39B;
+	--font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+	--font-body: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-family: var(--font-body);
+	color: var(--text-light);
+	background: #140507;
+	border-color: rgba(212, 175, 55, 0.25);
+	box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(212, 175, 55, 0.15);
+}
+
+/* Luxury Hero Header */
+.ya-hero-header {
+	text-align: center;
+	padding: 40px 20px 32px;
+	background: radial-gradient(circle at 50% 20%, rgba(212, 175, 55, 0.08) 0%, rgba(42, 13, 17, 0.5) 50%, transparent 80%);
+	position: relative;
+	margin-bottom: 24px;
+	border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.ya-brand-eyebrow {
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.35em;
+	text-transform: uppercase;
+	color: var(--gold-foil);
+	margin-bottom: 8px;
+	display: block;
+}
+
+.ya-hero-title {
+	font-family: var(--font-display);
+	font-size: clamp(34px, 5vw, 48px);
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: #FAF4EB;
+	margin: 0 0 10px 0;
+	line-height: 1.15;
+	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.ya-hero-subtitle {
+	font-size: 14px;
+	font-weight: 400;
+	color: var(--text-muted);
+	max-width: 580px;
+	margin: 0 auto;
+	line-height: 1.6;
+}
+
+/* Category Filter Tabs in Luxury Dark Style */
+.yab-category-tabs.ya-luxury-tabs {
+	background: #1C070A;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+	padding: 6px;
+	border-radius: 9999px;
+	max-width: 600px;
+	margin: 0 auto 30px auto;
+}
+
+.yab-category-tabs.ya-luxury-tabs .yab-tab-btn {
+	color: #D5C7B8;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	font-size: 12px;
+	text-transform: uppercase;
+	transition: all 0.25s ease;
+}
+
+.yab-category-tabs.ya-luxury-tabs .yab-tab-btn:hover {
+	color: var(--gold-light);
+	background: rgba(212, 175, 55, 0.12);
+}
+
+.yab-category-tabs.ya-luxury-tabs .yab-tab-btn.active {
+	background: linear-gradient(135deg, #3D1418 0%, #2A0C10 100%);
+	color: var(--gold-light);
+	border: 1px solid rgba(212, 175, 55, 0.4);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Luxury Service Cards Grid */
+.ya-grid-container {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+	gap: 24px;
+	margin-bottom: 30px;
+}
+
+/* Standard Burgundy & Terracotta Cards */
+.ya-card {
+	background-color: var(--bg-card-burgundy);
+	border: 1px solid var(--border-burgundy);
+	border-radius: 18px;
+	padding: 28px 24px;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+	box-shadow: 0 10px 30px -8px rgba(30, 7, 9, 0.25);
+	cursor: pointer;
+	color: var(--text-light);
+	overflow: hidden;
+}
+
+.ya-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, transparent, var(--gold-foil), transparent);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.ya-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 16px 36px -8px rgba(30, 7, 9, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.35);
+	border-color: rgba(212, 175, 55, 0.4);
+}
+
+.ya-card:hover::before {
+	opacity: 1;
+}
+
+.ya-card.selected {
+	border-color: var(--gold-foil);
+	box-shadow: 0 0 0 2px var(--gold-foil), 0 18px 40px -6px rgba(30, 7, 9, 0.45);
+	transform: translateY(-3px);
+}
+
+.ya-card.selected::before {
+	opacity: 1;
+}
+
+/* Terracotta Alternate Color for Highlighting Key Tiers */
+.ya-card.ya-card-terracotta {
+	background-color: var(--bg-card-terracotta);
+	border-color: #7A2F28;
+}
+
+/* Light / Guest Card Alternate */
+.ya-card.ya-card-light {
+	background-color: var(--bg-card-light);
+	border-color: var(--border-cream);
+	color: var(--text-burgundy);
+	box-shadow: 0 8px 24px -6px rgba(99, 35, 30, 0.08);
+}
+
+.ya-card.ya-card-light .ya-card-title {
+	color: var(--text-burgundy);
+}
+
+.ya-card.ya-card-light .ya-feature-item {
+	color: #553C3C;
+}
+
+.ya-card.ya-card-light .ya-price-label {
+	color: var(--text-muted);
+}
+
+/* Featured / Most Popular Ribbon Badge */
+.ya-badge-pill {
+	position: absolute;
+	top: 18px;
+	right: 18px;
+	background: linear-gradient(135deg, #D4AF37 0%, #AA8010 100%);
+	color: #1E0709;
+	font-size: 10px;
+	font-weight: 800;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	padding: 5px 12px;
+	border-radius: 9999px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.ya-category-tag {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--gold-foil);
+	margin-bottom: 6px;
+	display: block;
+}
+
+.ya-card.ya-card-light .ya-category-tag {
+	color: #9B382D;
+}
+
+.ya-card-title {
+	font-family: var(--font-display);
+	font-size: 26px;
+	font-weight: 600;
+	line-height: 1.2;
+	margin: 0 0 10px 0;
+	letter-spacing: -0.01em;
+	color: var(--text-light);
+}
+
+.ya-card-duration {
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--gold-light);
+	opacity: 0.85;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-bottom: 18px;
+}
+
+.ya-card.ya-card-light .ya-card-duration {
+	color: #8E7A7A;
+}
+
+/* Feature Perks Bullet List */
+.ya-features-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 24px 0;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.ya-feature-item {
+	font-size: 13px;
+	line-height: 1.45;
+	color: rgba(250, 246, 240, 0.9);
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.ya-check-icon {
+	color: var(--gold-foil);
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.ya-card.ya-card-light .ya-check-icon {
+	color: #9B382D;
+}
+
+/* Pricing Presentation Block */
+.ya-card-pricing-block {
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+	padding-top: 18px;
+	margin-top: auto;
+}
+
+.ya-card.ya-card-light .ya-card-pricing-block {
+	border-top-color: var(--border-cream);
+}
+
+.ya-price-label {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: rgba(250, 246, 240, 0.65);
+	margin-bottom: 4px;
+	display: block;
+}
+
+.ya-price-slot {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.ya-price-slot .ya-currency {
+	font-family: var(--font-display);
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--gold-foil);
+}
+
+.ya-price-slot .ya-amount {
+	font-family: var(--font-display);
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--text-light);
+	letter-spacing: -0.02em;
+	line-height: 1;
+}
+
+.ya-card.ya-card-light .ya-price-slot .ya-currency,
+.ya-card.ya-card-light .ya-price-slot .ya-amount {
+	color: var(--text-burgundy);
+}
+
+.ya-card-deposit-note {
+	font-size: 12px;
+	color: var(--gold-light);
+	font-weight: 600;
+	margin-bottom: 14px;
+	display: block;
+}
+
+.ya-card.ya-card-light .ya-card-deposit-note {
+	color: #9B382D;
+}
+
+/* Location Coverage Tags inside Service Card */
+.ya-card-locations-row {
+	font-size: 11px;
+	color: rgba(250, 246, 240, 0.7);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 14px;
+	line-height: 1.3;
+}
+
+.ya-card.ya-card-light .ya-card-locations-row {
+	color: #786464;
+}
+
+/* Card CTA Select Button */
+.ya-btn-select-card {
+	width: 100%;
+	padding: 12px 18px;
+	border-radius: 10px;
+	border: 1px solid var(--gold-foil);
+	background: transparent;
+	color: var(--gold-foil);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: all 0.25s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.ya-btn-select-card:hover {
+	background: var(--gold-foil);
+	color: #1E0709;
+}
+
+.ya-card.selected .ya-btn-select-card {
+	background: var(--gold-foil);
+	color: #1E0709;
+	box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+}
+
+.ya-card.ya-card-light .ya-btn-select-card {
+	border-color: #63231E;
+	color: #63231E;
+}
+
+.ya-card.ya-card-light .ya-btn-select-card:hover,
+.ya-card.ya-card-light.selected .ya-btn-select-card {
+	background: #63231E;
+	color: #FAF6F0;
+	border-color: #63231E;
+}
+
+/* Location Selector Bar - Prominently Displayed Under Services */
+.ya-location-bar {
+	background: #1C070A;
+	border: 1px solid rgba(212, 175, 55, 0.35);
+	border-radius: 14px;
+	padding: 20px 24px;
+	margin-top: 10px;
+	margin-bottom: 24px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ya-location-bar.ya-location-bar-highlight {
+	border-color: var(--gold-foil);
+	box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.4), 0 8px 25px rgba(0, 0, 0, 0.6);
+	transform: scale(1.01);
+}
+
+.ya-location-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.ya-location-heading {
+	font-family: var(--font-display);
+	font-size: 20px;
+	font-weight: 700;
+	color: #FAF4EB;
+	margin: 0;
+}
+
+.ya-location-sub {
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+.ya-location-select-wrap {
+	flex: 1;
+	min-width: 260px;
+	max-width: 380px;
+}
+
+.yab-luxury-wrapper .yab-select,
+.yab-luxury-wrapper select.yab-select {
+	background-color: #120406;
+	color: #FAF4EB;
+	border: 1px solid rgba(212, 175, 55, 0.35);
+	border-radius: 8px;
+	padding: 10px 14px;
+	font-size: 14px;
+	width: 100%;
+	outline: none;
+	transition: border-color 0.2s;
+}
+
+.yab-luxury-wrapper .yab-select:focus,
+.yab-luxury-wrapper select.yab-select:focus {
+	border-color: var(--gold-foil);
+	box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.yab-luxury-wrapper .yab-input,
+.yab-luxury-wrapper .yab-textarea,
+.yab-luxury-wrapper input[type="text"],
+.yab-luxury-wrapper input[type="email"],
+.yab-luxury-wrapper input[type="tel"],
+.yab-luxury-wrapper textarea {
+	background-color: #120406;
+	color: #FAF4EB;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+	border-radius: 8px;
+	padding: 10px 14px;
+	font-size: 14px;
+	outline: none;
+}
+
+.yab-luxury-wrapper .yab-input:focus,
+.yab-luxury-wrapper .yab-textarea:focus,
+.yab-luxury-wrapper input:focus,
+.yab-luxury-wrapper textarea:focus {
+	border-color: var(--gold-foil);
+	box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.ya-step-section-heading {
+	font-family: var(--font-display, serif);
+	font-size: 19px;
+	font-weight: 700;
+	color: #FAF4EB;
+	margin-bottom: 12px;
+	display: block;
+}
+
+/* Extra Looks Counter & Add-ons */
+.ya-extra-looks-box {
+	background: #1C070A;
+	border: 1px dashed rgba(212, 175, 55, 0.5);
+	border-radius: 12px;
+	padding: 16px 20px;
+	margin-top: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 14px;
+}
+
+.ya-extra-looks-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.ya-extra-looks-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: #FAF4EB;
+}
+
+.ya-extra-looks-rate {
+	font-size: 12px;
+	color: var(--gold-light);
+}
+
+.ya-counter-controls {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	background: #120406;
+	border: 1px solid rgba(212, 175, 55, 0.35);
+	border-radius: 8px;
+	padding: 4px 8px;
+}
+
+.ya-counter-btn {
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+	background: #22090C;
+	color: var(--gold-light);
+	font-size: 16px;
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.ya-counter-btn:hover:not(:disabled) {
+	background: var(--gold-foil);
+	color: #120406;
+	border-color: var(--gold-foil);
+}
+
+.ya-counter-btn:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.ya-counter-value {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--gold-light);
+	min-width: 24px;
+	text-align: center;
+}
+
+/* Luxury Stepper and Progress Accents */
+.yab-stepper-wrapper {
+	background: #1C070A;
+	border-color: rgba(212, 175, 55, 0.3);
+}
+
+.yab-step {
+	color: #A8958E;
+}
+
+.yab-step.active {
+	color: var(--gold-light);
+}
+
+.yab-step-number {
+	background: #2A0D11;
+	color: #A8958E;
+	border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.yab-step-item.active .yab-step-number {
+	background: linear-gradient(135deg, var(--gold-foil) 0%, #B8860B 100%);
+	color: #120406;
+	font-weight: 800;
+}
+
+.yab-step-item.completed .yab-step-number {
+	background: #276749;
+	color: #ffffff;
+}
+
+.yab-status-badge-count {
+	background: rgba(212, 175, 55, 0.15);
+	color: var(--gold-light);
+	border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.yab-status-remaining-badge {
+	background: rgba(212, 175, 55, 0.1);
+	color: var(--gold-light);
+	border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.yab-status-title {
+	font-family: var(--font-display);
+	font-size: 24px;
+	color: #FAF4EB;
+}
+
+/* Luxury Buttons */
+.yab-btn-primary {
+	background: linear-gradient(135deg, #3D1418 0%, #2A0C10 100%);
+	color: var(--gold-light);
+	border: 1px solid var(--gold-foil);
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	transition: all 0.3s ease;
+}
+
+.yab-btn-primary:hover:not(:disabled) {
+	background: var(--gold-foil);
+	color: #120406;
+	box-shadow: 0 4px 18px rgba(212, 175, 55, 0.4);
+	border-color: var(--gold-foil);
+}
+
+.yab-btn-secondary {
+	background: #22090C;
+	color: #D5C7B8;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.yab-btn-secondary:hover:not(:disabled) {
+	background: #351014;
+	color: #FAF4EB;
+}
+
+.yab-btn-success {
+	background: #1F4D33;
+	border: 1px solid #38A169;
+	color: #FAF4EB;
+}
+
+.yab-btn-success:hover:not(:disabled) {
+	background: #276749;
+	box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+}
+
+/* Luxury Payment Selection Card (Step 4) */
+.yab-payment-choice-wrapper {
+	background: #1C070A;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+	border-radius: 14px;
+	padding: 22px;
+	margin-bottom: 24px;
+}
+
+.yab-payment-choice-title {
+	font-family: var(--font-display);
+	font-size: 20px;
+	font-weight: 700;
+	color: #FAF4EB;
+	margin: 0 0 16px 0;
+}
+
+.yab-payment-option {
+	background: #140507;
+	border: 1.5px solid rgba(212, 175, 55, 0.25);
+	color: #FAF4EB;
+}
+
+.yab-payment-option:hover {
+	border-color: rgba(212, 175, 55, 0.5);
+	background: #22090C;
+}
+
+.yab-payment-option.selected {
+	border-color: var(--gold-foil);
+	background: #260A0E;
+	box-shadow: 0 0 0 1.5px var(--gold-foil);
+}
+
+.yab-payment-option .yab-opt-title {
+	color: #FAF4EB;
+}
+
+.yab-payment-option .yab-opt-desc {
+	color: var(--text-muted);
+}
+
+.yab-payment-option .yab-opt-price {
+	color: var(--gold-foil);
+	font-family: var(--font-display);
+	font-size: 18px;
+	font-weight: 700;
+}
+
+/* Appointment Summary Card */
+.yab-summary-card {
+	background: #1C070A;
+	border: 1px solid rgba(212, 175, 55, 0.3);
+	border-radius: 14px;
+}
+
+.yab-summary-header {
+	background: #2A0C10;
+	color: var(--gold-light);
+	border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.yab-summary-header h4 {
+	font-family: var(--font-display);
+	font-size: 20px;
+	letter-spacing: 0.02em;
+	margin: 0;
+}
+
+.yab-summary-row {
+	border-bottom-color: rgba(212, 175, 55, 0.12);
+}
+
+.yab-sum-label {
+	color: var(--text-muted);
+}
+
+.yab-sum-val {
+	color: #FAF4EB;
+}
+
+.yab-sum-val.highlight {
+	color: var(--gold-foil);
+	font-family: var(--font-display);
+	font-size: 20px;
+	font-weight: 700;
+}
+

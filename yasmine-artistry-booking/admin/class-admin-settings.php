@@ -56,6 +56,7 @@ class YAB_Admin_Settings {
 				'deposit_percentage' => floatval( $_POST['deposit_value'] ?? 50 ),
 				'deposit_fixed'      => floatval( $_POST['deposit_value'] ?? 5000 ),
 				'require_deposit'    => isset( $_POST['require_deposit'] ) ? 1 : 0,
+				'extra_look_rate'    => floatval( $_POST['extra_look_rate'] ?? 50000 ),
 			);
 			YAB_Settings::update_group( 'pricing', $data );
 		} elseif ( 'paystack' === $tab ) {

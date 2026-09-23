@@ -70,17 +70,30 @@ export default function BookingFormSimulator({
     }
   }, [services, selectedServiceId]);
 
-  // Initialize selectedCategoryOptionId if category configuration is enabled
+  // Initialize selectedCategoryOptionId if category configuration is enabled, filtered by selected service
   React.useEffect(() => {
     if (businessSettings.categoryConfig?.enabled && businessSettings.categoryConfig.options.length > 0) {
-      const activeOption = businessSettings.categoryConfig.options.find(o => o.id === selectedCategoryOptionId);
-      if (!activeOption) {
-        setSelectedCategoryOptionId(businessSettings.categoryConfig.options[0].id);
+      const currentService = services.find(s => s.id === selectedServiceId) || (selectedServiceId ? null : services[0]);
+      if (!currentService) return;
+
+      const assignedIds = currentService.assignedLocationIds;
+      
+      // Determine locations valid for this service (if empty/none assigned, all locations apply)
+      const validOptions = (assignedIds && assignedIds.length > 0)
+        ? businessSettings.categoryConfig.options.filter(o => assignedIds.includes(o.id))
+        : businessSettings.categoryConfig.options;
+
+      const fallbackOptions = validOptions.length > 0 ? validOptions : businessSettings.categoryConfig.options;
+      const isCurrentlySelectedValid = fallbackOptions.some(o => o.id === selectedCategoryOptionId);
+      
+      // Only change if the current selection is no longer valid for this specific service
+      if (!isCurrentlySelectedValid) {
+        setSelectedCategoryOptionId(fallbackOptions[0]?.id || '');
       }
     } else {
       setSelectedCategoryOptionId('');
     }
-  }, [businessSettings.categoryConfig, selectedCategoryOptionId]);
+  }, [businessSettings.categoryConfig, selectedCategoryOptionId, selectedServiceId, services]);
 
   // Set default payment method based on Paystack availability
   React.useEffect(() => {
@@ -377,21 +390,22 @@ export default function BookingFormSimulator({
 
       {/* Multi-step indicators with Horizontal Stepper, Arrows & Remaining Steps */}
       {step < 5 && (
-        <div id="booking-stepper-header" className="border-b border-slate-150 bg-slate-50/60 p-4 space-y-2.5">
-          <div className="flex items-center justify-between overflow-x-auto scrollbar-none gap-2 px-1">
+        <div id="booking-stepper-header" className="border-b border-slate-200/80 bg-slate-50/70 p-4 space-y-3">
+          {/* Horizontal Stepper wrapped into unit items so arrows never wrap alone */}
+          <div className="flex items-center flex-wrap gap-x-2 gap-y-2.5">
             {[
-              { n: 1, name: 'Service' },
-              { n: 2, name: 'Schedule' },
-              { n: 3, name: 'Details' },
-              { n: 4, name: 'Payment' }
+              { n: 1, name: 'Service & Location' },
+              { n: 2, name: 'Date & Time' },
+              { n: 3, name: 'Client Details' },
+              { n: 4, name: 'Confirm & Pay' }
             ].map((s, idx) => (
-              <React.Fragment key={s.n}>
+              <div key={s.n} className="inline-flex items-center gap-2 whitespace-nowrap">
                 <div 
-                  className={`flex items-center space-x-2 text-xs font-bold transition whitespace-nowrap px-2.5 py-1.5 rounded-xl ${
+                  className={`inline-flex items-center space-x-2 text-xs font-semibold transition px-2.5 py-1.5 rounded-xl ${
                     step === s.n 
-                      ? 'bg-white text-[var(--brand-primary)] shadow-xs ring-1 ring-slate-200/80 font-extrabold' 
+                      ? 'bg-white text-[var(--brand-primary)] shadow-xs ring-1 ring-slate-200 font-extrabold' 
                       : step > s.n 
-                      ? 'text-emerald-700 bg-emerald-50/80' 
+                      ? 'text-emerald-700 bg-emerald-50/80 font-bold' 
                       : 'text-slate-400'
                   }`}
                 >
@@ -407,31 +421,40 @@ export default function BookingFormSimulator({
                   <span>{s.name}</span>
                 </div>
                 {idx < 3 && (
-                  <ChevronRight className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                  <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${
                     step > s.n ? 'text-emerald-600' : step === s.n ? 'text-[var(--brand-primary)]' : 'text-slate-300'
                   }`} />
                 )}
-              </React.Fragment>
+              </div>
             ))}
           </div>
 
-          {/* Stepper Status Bar with Remaining Steps & Next Preview */}
-          <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-200/60 text-[11px] font-semibold text-slate-500">
-            <div className="flex items-center space-x-2">
-              <span className="bg-indigo-100 text-indigo-800 font-extrabold px-2 py-0.5 rounded-full text-[10px]">
+          {/* Stepper Status Bar (Line 1: Breadcrumbs, Line 2: Current Step Title Bold) */}
+          <div className="pt-2.5 border-t border-slate-200/80 space-y-1">
+            {/* Line 1: Breadcrumbs */}
+            <div className="flex items-center flex-wrap gap-2 text-xs">
+              <span className="bg-indigo-100 text-indigo-800 font-extrabold px-2.5 py-0.5 rounded-full text-[11px]">
                 Step {step} of 4
               </span>
-              <span className="text-slate-700 font-bold">
-                {step === 1 ? 'Service Selection' : step === 2 ? 'Date & Time Selection' : step === 3 ? 'Contact & Address' : 'Review & Payment'}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="bg-amber-50 text-amber-800 border border-amber-200 font-bold px-2 py-0.5 rounded-full text-[10px]">
+              <span className="text-slate-400 text-xs">•</span>
+              <span className="bg-amber-50 text-amber-800 border border-amber-200 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
                 {4 - step > 0 ? `${4 - step} step${4 - step > 1 ? 's' : ''} remaining` : 'Final Step'}
               </span>
-              <span className="text-slate-500 font-medium hidden sm:inline">
-                {step === 1 ? 'Next: Schedule →' : step === 2 ? 'Next: Details →' : step === 3 ? 'Next: Payment →' : 'Complete Booking'}
-              </span>
+              {step < 4 && (
+                <>
+                  <span className="text-slate-400 text-xs">•</span>
+                  <span className="text-slate-500 font-medium text-xs">
+                    {step === 1 ? 'Next: Date & Time →' : step === 2 ? 'Next: Enter Details →' : 'Next: Review & Payment →'}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Line 2: Current Step Title (Bold) */}
+            <div className="pt-0.5">
+              <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
+                {step === 1 ? 'Select Your Service & Service Location' : step === 2 ? 'Choose Appointment Date & Time' : step === 3 ? 'Client Contact & Service Address' : 'Confirm & Pay Deposit'}
+              </h3>
             </div>
           </div>
         </div>
@@ -449,10 +472,7 @@ export default function BookingFormSimulator({
         {/* STEP 1: Select Service */}
         {step === 1 && (
           <div id="step-1-service-select" className="space-y-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800">Select a Service Offered</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Choose the appointment category for your session.</p>
-            </div>
+            <p className="text-xs text-slate-500">Choose the appointment category and beauty service for your session.</p>
 
             {/* Redesigned Category Selector Tabs with "All Services" at the End */}
             <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
@@ -538,7 +558,31 @@ export default function BookingFormSimulator({
                       <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{s.description}</p>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500">
+                    {/* Assigned Locations visible on frontend service card */}
+                    {businessSettings.categoryConfig?.enabled && (
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center flex-wrap gap-1">
+                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-0.5 mr-0.5">
+                          <MapPin className="w-3 h-3 text-indigo-500" />
+                          Locations:
+                        </span>
+                        {(!s.assignedLocationIds || s.assignedLocationIds.length === 0) ? (
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                            All locations active
+                          </span>
+                        ) : (
+                          s.assignedLocationIds.map(locId => {
+                            const loc = businessSettings.categoryConfig?.options.find(o => o.id === locId);
+                            return (
+                              <span key={locId} className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-full">
+                                {loc ? loc.name : locId}
+                              </span>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
                       <span>⏱ {s.duration} mins</span>
                       {s.depositValue > 0 ? (
                         <span className="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200 text-[10px]">
@@ -553,42 +597,57 @@ export default function BookingFormSimulator({
               })}
             </div>
 
-            {/* Dynamic Category Option Selection (e.g. Location) - Placed under services list */}
-            {businessSettings.categoryConfig?.enabled && businessSettings.categoryConfig.options.length > 0 && (
-              <div id="widget-category-selector" className="bg-white border border-slate-200 p-4.5 rounded-2xl space-y-2.5 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-700 tracking-wide uppercase">
-                    Select {businessSettings.categoryConfig.label || 'Location'}:
-                  </span>
-                  <span className="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-indigo-100">
-                    Required Selection
-                  </span>
+            {/* Dynamic Category Option Selection (e.g. Location) - Filtered by assigned locations of selected service */}
+            {businessSettings.categoryConfig?.enabled && businessSettings.categoryConfig.options.length > 0 && (() => {
+              const currentService = services.find(s => s.id === selectedServiceId) || services[0];
+              const assignedIds = currentService?.assignedLocationIds;
+              const availableLocations = (assignedIds && assignedIds.length > 0)
+                ? businessSettings.categoryConfig.options.filter(opt => assignedIds.includes(opt.id))
+                : businessSettings.categoryConfig.options;
+
+              return (
+                <div id="widget-category-selector" className="bg-white border border-slate-200 p-4.5 rounded-2xl space-y-2.5 shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-700 tracking-wide uppercase">
+                      Select {businessSettings.categoryConfig.label || 'Location'}:
+                    </span>
+                    <span className="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-indigo-100">
+                      {assignedIds && assignedIds.length > 0 ? `${availableLocations.length} Available for this Service` : 'Required Selection'}
+                    </span>
+                  </div>
+                  
+                  {availableLocations.length === 0 ? (
+                    <p className="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                      No specific locations linked to this service offering.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {availableLocations.map((opt) => (
+                        <motion.button
+                          whileTap={{ scale: 0.94 }}
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategoryOptionId(opt.id);
+                            onShowToast?.(`Selected ${businessSettings.categoryConfig.label || 'Category'}: ${opt.name}`, 'info');
+                          }}
+                          className={`px-3 py-2.5 text-xs font-bold rounded-xl border text-center transition duration-150 cursor-pointer shadow-xs ${
+                            selectedCategoryOptionId === opt.id
+                              ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)] shadow-sm'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="truncate">{opt.name}</div>
+                          <div className={`text-[9px] mt-0.5 font-medium ${selectedCategoryOptionId === opt.id ? 'text-white/90' : 'text-slate-400'}`}>
+                            {opt.priceValue === 0 ? 'No fee' : `+${symbol}${opt.priceValue.toLocaleString()}`}
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {businessSettings.categoryConfig.options.map((opt) => (
-                    <motion.button
-                      whileTap={{ scale: 0.94 }}
-                      key={opt.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryOptionId(opt.id);
-                        onShowToast?.(`Selected ${businessSettings.categoryConfig.label || 'Category'}: ${opt.name}`, 'info');
-                      }}
-                      className={`px-3 py-2.5 text-xs font-bold rounded-xl border text-center transition duration-150 cursor-pointer shadow-xs ${
-                        selectedCategoryOptionId === opt.id
-                          ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)] shadow-sm'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="truncate">{opt.name}</div>
-                      <div className={`text-[9px] mt-0.5 font-medium ${selectedCategoryOptionId === opt.id ? 'text-white/90' : 'text-slate-400'}`}>
-                        {opt.priceValue === 0 ? 'No fee' : `+${symbol}${opt.priceValue.toLocaleString()}`}
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="flex justify-end pt-3">
               <motion.button
@@ -607,15 +666,12 @@ export default function BookingFormSimulator({
         {/* STEP 2: Pick Schedule with Calendar */}
         {step === 2 && (
           <div id="step-2-schedule" className="space-y-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800">Select Date &amp; Time</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Choose your date from the interactive calendar and pick an available time slot.</p>
-            </div>
+            <p className="text-xs text-slate-500">Choose your date from the interactive calendar and pick an available time slot.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Interactive Month Calendar */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-150 pb-2.5">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                   <span className="text-xs font-bold text-slate-800">
                     {new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                   </span>
@@ -629,7 +685,7 @@ export default function BookingFormSimulator({
                   <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
                 </div>
 
-                {/* Days Grid */}
+                {/* Days Grid with light color, subtle borders, hover & select effect */}
                 <div className="grid grid-cols-7 gap-1.5">
                   {Array.from({ length: 35 }).map((_, idx) => {
                     const today = new Date();
@@ -643,7 +699,7 @@ export default function BookingFormSimulator({
                     const isSelected = selectedDate === dateStr && isDayValid;
 
                     if (!isDayValid) {
-                      return <div key={idx} className="h-8 rounded-lg opacity-20 bg-slate-100" />;
+                      return <div key={idx} className="h-8 rounded-lg opacity-10 bg-slate-100" />;
                     }
 
                     return (
@@ -656,12 +712,12 @@ export default function BookingFormSimulator({
                           setSelectedTime('');
                           onShowToast?.(`Selected date: ${dateStr}`, 'info');
                         }}
-                        className={`h-8 rounded-lg text-xs font-bold flex items-center justify-center transition cursor-pointer ${
+                        className={`h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all duration-150 cursor-pointer ${
                           isSelected
-                            ? 'bg-[var(--brand-primary)] text-white shadow-xs'
+                            ? 'bg-[var(--brand-primary)] text-white font-bold border border-[var(--brand-primary)] shadow-sm -translate-y-0.5 scale-[1.02]'
                             : isPast
-                            ? 'text-slate-300 cursor-not-allowed line-through'
-                            : 'hover:bg-slate-100 text-slate-700 bg-slate-50'
+                            ? 'text-slate-300 cursor-not-allowed line-through bg-slate-50/50 border border-slate-100'
+                            : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-0.5 hover:shadow-xs'
                         }`}
                       >
                         {dayNum}
@@ -747,10 +803,7 @@ export default function BookingFormSimulator({
         {/* STEP 3: Customer Details */}
         {step === 3 && (
           <div id="step-3-details" className="space-y-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800">Enter Your Details</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Provide contact information for appointment alerts and tracking.</p>
-            </div>
+            <p className="text-xs text-slate-500">Provide contact information for appointment alerts and tracking.</p>
 
             <div className="space-y-3.5">
               <div>
@@ -865,10 +918,7 @@ export default function BookingFormSimulator({
         {/* STEP 4: Checkout Payment */}
         {step === 4 && (
           <form id="checkout-form" onSubmit={handleFormSubmit} className="space-y-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-800">Review &amp; Payment</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Verify your booking details and make a secure payment.</p>
-            </div>
+            <p className="text-xs text-slate-500">Verify your booking details and make a secure payment.</p>
 
             {/* Summary Ticket */}
             <div className="bg-white border border-slate-200/60 rounded-2xl p-5 space-y-4 shadow-xs">

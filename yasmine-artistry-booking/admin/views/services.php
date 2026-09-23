@@ -14,7 +14,9 @@ $editing = $edit_id > 0 ? YAB_Service::get( $edit_id ) : null;
 
 $services   = YAB_Service::get_all( array( 'active_only' => false ) );
 $categories = YAB_Category::get_all( array( 'active_only' => true ) );
+$locations  = YAB_Location::get_all( array( 'active_only' => true ) );
 $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
+$linked_loc_ids = $editing ? (array) ( $editing->linked_location_ids ?? array() ) : array();
 ?>
 
 <div class="wrap yab-admin-wrap">
@@ -100,6 +102,38 @@ $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
 							<textarea name="description" id="description" class="widefat" rows="3"><?php echo $editing ? esc_textarea( $editing->description ) : ''; ?></textarea>
 						</p>
 
+						<!-- Linked Locations Selection for Service-Specific Variable Pricing -->
+						<div class="yab-locations-link-wrap" style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+							<label><strong><?php esc_html_e( 'Linked Locations / Service Areas', 'yasmine-artistry-booking' ); ?></strong></label>
+							<p class="description" style="margin-top: 2px; margin-bottom: 8px;">
+								<?php esc_html_e( 'Check the specific locations where this service can be booked. If no locations are checked, this service is available across all active locations.', 'yasmine-artistry-booking' ); ?>
+							</p>
+							<?php if ( ! empty( $locations ) ) : ?>
+								<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+									<?php foreach ( $locations as $loc ) : ?>
+										<?php $is_checked = in_array( intval( $loc->id ), $linked_loc_ids, true ); ?>
+										<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; background: #ffffff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer;">
+											<input type="checkbox" name="location_ids[]" value="<?php echo esc_attr( $loc->id ); ?>" <?php checked( $is_checked, true ); ?>>
+											<span>
+												<strong><?php echo esc_html( $loc->name ); ?></strong>
+												<span style="color: #64748b; font-size: 11px;">
+													(<?php echo 'percentage' === $loc->fee_type ? '+' . floatval( $loc->fee_amount ) . '%' : '+' . esc_html( YAB_Pricing::format_amount( $loc->fee_amount, $currency . ' ' ) ); ?>)
+												</span>
+											</span>
+										</label>
+									<?php endforeach; ?>
+								</div>
+							<?php else : ?>
+								<p class="description" style="color: #b45309;">
+									<?php printf(
+										/* translators: %s: Locations admin URL */
+										__( 'No active locations configured. <a href="%s">Create locations here</a> first.', 'yasmine-artistry-booking' ),
+										esc_url( admin_url( 'admin.php?page=yab-locations' ) )
+									); ?>
+								</p>
+							<?php endif; ?>
+						</div>
+
 						<p>
 							<label>
 								<input type="checkbox" name="is_active" value="1" <?php checked( $editing ? $editing->is_active : 1, 1 ); ?>>
@@ -147,7 +181,27 @@ $currency   = YAB_Settings::get( 'general', 'currency_symbol', '₦' );
 										<div style="width: 40px; height: 40px; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px;">✦</div>
 									<?php endif; ?>
 								</td>
-								<td><strong><?php echo esc_html( $s->name ); ?></strong></td>
+								<td>
+									<strong><?php echo esc_html( $s->name ); ?></strong>
+									<?php
+									$s_locs = YAB_Service::get_linked_location_ids( $s->id );
+									if ( ! empty( $s_locs ) ) :
+										$loc_names = array();
+										foreach ( $locations as $l ) {
+											if ( in_array( intval( $l->id ), $s_locs, true ) ) {
+												$loc_names[] = $l->name;
+											}
+										}
+									?>
+										<div style="font-size: 11px; color: #4338ca; margin-top: 3px;">
+											📍 <?php echo esc_html( implode( ', ', $loc_names ) ); ?>
+										</div>
+									<?php else : ?>
+										<div style="font-size: 11px; color: #15803d; margin-top: 3px;">
+											📍 <?php esc_html_e( 'All locations active', 'yasmine-artistry-booking' ); ?>
+										</div>
+									<?php endif; ?>
+								</td>
 								<td><?php echo esc_html( $s->category_name ? $s->category_name : '—' ); ?></td>
 								<td><strong><?php echo esc_html( YAB_Pricing::format_amount( $s->base_price, $currency . ' ' ) ); ?></strong></td>
 								<td><?php printf( esc_html__( '%d mins (+%d buffer)', 'yasmine-artistry-booking' ), $s->duration_minutes, $s->buffer_minutes ); ?></td>

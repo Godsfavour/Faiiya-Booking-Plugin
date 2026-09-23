@@ -17,6 +17,7 @@ class YAB_Database {
 	public static function install() {
 		self::create_tables();
 		self::seed_default_business_hours();
+		self::seed_default_bridal_catalog();
 		update_option( 'yab_db_version', YAB_DB_VERSION );
 	}
 
@@ -45,14 +46,15 @@ class YAB_Database {
 
 		$charset_collate = $wpdb->get_charset_collate();
 
-		$categories_table     = self::table( 'categories' );
-		$services_table       = self::table( 'services' );
-		$locations_table      = self::table( 'locations' );
-		$business_hours_table = self::table( 'business_hours' );
-		$special_days_table   = self::table( 'special_days' );
-		$bookings_table       = self::table( 'bookings' );
-		$payments_table       = self::table( 'payments' );
-		$logs_table           = self::table( 'logs' );
+		$categories_table        = self::table( 'categories' );
+		$services_table          = self::table( 'services' );
+		$locations_table         = self::table( 'locations' );
+		$service_locations_table = self::table( 'service_locations' );
+		$business_hours_table    = self::table( 'business_hours' );
+		$special_days_table      = self::table( 'special_days' );
+		$bookings_table          = self::table( 'bookings' );
+		$payments_table          = self::table( 'payments' );
+		$logs_table              = self::table( 'logs' );
 
 		// 1. Categories
 		$sql_categories = "CREATE TABLE {$categories_table} (
@@ -105,6 +107,15 @@ class YAB_Database {
 			PRIMARY KEY  (id),
 			UNIQUE KEY uq_slug (slug),
 			KEY idx_active (is_active)
+		) {$charset_collate};";
+
+		// 3b. Service-Location Junction Table (Many-to-Many linking for service-specific location pricing)
+		$sql_service_locations = "CREATE TABLE {$service_locations_table} (
+			service_id bigint(20) unsigned NOT NULL,
+			location_id bigint(20) unsigned NOT NULL,
+			created_at datetime NOT NULL,
+			PRIMARY KEY  (service_id, location_id),
+			KEY idx_location (location_id)
 		) {$charset_collate};";
 
 		// 4. Business Hours
@@ -208,6 +219,7 @@ class YAB_Database {
 			dbDelta( $sql_categories );
 			dbDelta( $sql_services );
 			dbDelta( $sql_locations );
+			dbDelta( $sql_service_locations );
 			dbDelta( $sql_business_hours );
 			dbDelta( $sql_special_days );
 			dbDelta( $sql_bookings );
@@ -218,11 +230,186 @@ class YAB_Database {
 			$wpdb->query( $sql_categories );
 			$wpdb->query( $sql_services );
 			$wpdb->query( $sql_locations );
+			$wpdb->query( $sql_service_locations );
 			$wpdb->query( $sql_business_hours );
 			$wpdb->query( $sql_special_days );
 			$wpdb->query( $sql_bookings );
 			$wpdb->query( $sql_payments );
 			$wpdb->query( $sql_logs );
+		}
+	}
+
+	/**
+	 * Seed standard bridal packages, categories, and Mainland/Island locations if empty.
+	 * Completely customizable from the WordPress Admin Dashboard.
+	 */
+	public static function seed_default_bridal_catalog() {
+		global $wpdb;
+
+		$cat_table     = self::table( 'categories' );
+		$service_table = self::table( 'services' );
+		$loc_table     = self::table( 'locations' );
+		$rel_table     = self::table( 'service_locations' );
+
+		// 1. Seed Categories if empty
+		$cat_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$cat_table}" );
+		if ( intval( $cat_count ) === 0 ) {
+			$wpdb->insert(
+				$cat_table,
+				array(
+					'name'        => 'Bridal Artistry',
+					'slug'        => 'bridal-artistry',
+					'description' => 'Luxury bridal beauty transformations, studio couture, and wedding party packages.',
+					'sort_order'  => 1,
+					'is_active'   => 1,
+					'created_at'  => current_time( 'mysql' ),
+					'updated_at'  => current_time( 'mysql' ),
+				)
+			);
+			$bridal_cat_id = $wpdb->insert_id;
+
+			$wpdb->insert(
+				$cat_table,
+				array(
+					'name'        => 'Bridal Train & Guests',
+					'slug'        => 'bridal-train-guests',
+					'description' => 'Refined, long-wear glam for bridesmaids, mothers of the couple, and wedding guests.',
+					'sort_order'  => 2,
+					'is_active'   => 1,
+					'created_at'  => current_time( 'mysql' ),
+					'updated_at'  => current_time( 'mysql' ),
+				)
+			);
+		} else {
+			$bridal_cat_id = $wpdb->get_var( "SELECT id FROM {$cat_table} ORDER BY sort_order ASC LIMIT 1" );
+		}
+
+		// 2. Seed Lagos Locations (Mainland & Island) if empty
+		$loc_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$loc_table}" );
+		$island_loc_id   = 0;
+		$mainland_loc_id = 0;
+
+		if ( intval( $loc_count ) === 0 ) {
+			// Island (Base tier / standard)
+			$wpdb->insert(
+				$loc_table,
+				array(
+					'name'        => 'Lagos Island (Ikoyi, VI, Lekki)',
+					'slug'        => 'lagos-island',
+					'description' => 'Lagos Island coverage including Victoria Island, Ikoyi, Lekki Phase 1 and Chevron corridor.',
+					'fee_type'    => 'fixed',
+					'fee_amount'  => 0.00,
+					'is_active'   => 1,
+					'sort_order'  => 1,
+					'created_at'  => current_time( 'mysql' ),
+					'updated_at'  => current_time( 'mysql' ),
+				)
+			);
+			$island_loc_id = $wpdb->insert_id;
+
+			// Mainland (Surcharge tier)
+			$wpdb->insert(
+				$loc_table,
+				array(
+					'name'        => 'Lagos Mainland (Ikeja, Surulere, Yaba)',
+					'slug'        => 'lagos-mainland',
+					'description' => 'Lagos Mainland coverage including Ikeja GRA, Maryland, Surulere, Yaba, Magodo.',
+					'fee_type'    => 'fixed',
+					'fee_amount'  => 50000.00,
+					'is_active'   => 1,
+					'sort_order'  => 2,
+					'created_at'  => current_time( 'mysql' ),
+					'updated_at'  => current_time( 'mysql' ),
+				)
+			);
+			$mainland_loc_id = $wpdb->insert_id;
+		}
+
+		// 3. Seed Bridal Packages if services table is empty
+		$svc_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$service_table}" );
+		if ( intval( $svc_count ) === 0 && ! empty( $bridal_cat_id ) ) {
+			$default_services = array(
+				array(
+					'name'             => 'Silver Elegance Bridal',
+					'slug'             => 'silver-elegance-bridal',
+					'base_price'       => 200000.00,
+					'duration_minutes' => 90,
+					'buffer_minutes'   => 30,
+					'sort_order'       => 1,
+					'description'      => "• 1 Luxury Bridal Look (Ceremony / Reception)\n• Flawless 18hr Water-Resistant Skin Prep\n• Luxury Mink Eyelashes\n• Full Bridal Touch-Up Kit\n• Travel within coverage zone included",
+				),
+				array(
+					'name'             => 'Golden Splendor Bridal',
+					'slug'             => 'golden-splendor-bridal',
+					'base_price'       => 350000.00,
+					'duration_minutes' => 150,
+					'buffer_minutes'   => 30,
+					'sort_order'       => 2,
+					'description'      => "• 2 Stunning Bridal Looks (Ceremony + Reception Change)\n• Premium HD Airbrush & Skin Glow Treatment\n• 3D Luxury Silk Lashes\n• Comprehensive Touch-up & Refresh Kit\n• Up to 2hrs On-Site Artist Touch-up Time",
+				),
+				array(
+					'name'             => 'White Diamond Couture',
+					'slug'             => 'white-diamond-couture',
+					'base_price'       => 500000.00,
+					'duration_minutes' => 180,
+					'buffer_minutes'   => 45,
+					'sort_order'       => 3,
+					'description'      => "• Full Wedding Day Dedicated Artistry\n• Up to 3 Complete Bridal Look Changes\n• Pre-Wedding Bridal Consultation & Trial\n• Deluxe Bridal Skincare & Radiance Facial\n• Artist Stays On-Site Until Reception Closes\n• Mother-of-the-Bride / Maid-of-Honor Glam Included",
+				),
+				array(
+					'name'             => 'Pre-Wedding Studio & Engagement',
+					'slug'             => 'pre-wedding-studio-engagement',
+					'base_price'       => 150000.00,
+					'duration_minutes' => 90,
+					'buffer_minutes'   => 30,
+					'sort_order'       => 4,
+					'description'      => "• 2 Editorial Looks for Couple Photoshoot\n• Studio Lighting Matte/Dewy Contour Finish\n• Eyelash Enhancement\n• Touch-Up Assistance on Set",
+				),
+				array(
+					'name'             => 'Bridal Train / Bridesmaids Glam',
+					'slug'             => 'bridal-train-bridesmaids-glam',
+					'base_price'       => 65000.00,
+					'duration_minutes' => 60,
+					'buffer_minutes'   => 15,
+					'sort_order'       => 5,
+					'description'      => "• Flawless Bridal Train Beauty Look (Per Person)\n• Coordinated Bridal Palette\n• Premium False Eyelashes\n• Mini Lip Touch-Up Vial",
+				),
+				array(
+					'name'             => 'Mother of the Bride / Groom Glam',
+					'slug'             => 'mother-of-the-bride-groom-glam',
+					'base_price'       => 85000.00,
+					'duration_minutes' => 75,
+					'buffer_minutes'   => 20,
+					'sort_order'       => 6,
+					'description'      => "• Sophisticated Ageless Glam & Hydrating Skin Finish\n• Gentle Eye Contouring & Natural Mink Lashes\n• All-Day Setting Spray & Lipstick Touch-Up",
+				),
+			);
+
+			foreach ( $default_services as $svc ) {
+				$wpdb->insert(
+					$service_table,
+					array(
+						'category_id'      => $bridal_cat_id,
+						'name'             => $svc['name'],
+						'slug'             => $svc['slug'],
+						'base_price'       => $svc['base_price'],
+						'duration_minutes' => $svc['duration_minutes'],
+						'buffer_minutes'   => $svc['buffer_minutes'],
+						'sort_order'       => $svc['sort_order'],
+						'description'      => $svc['description'],
+						'is_active'        => 1,
+						'created_at'       => current_time( 'mysql' ),
+						'updated_at'       => current_time( 'mysql' ),
+					)
+				);
+				$svc_id = $wpdb->insert_id;
+
+				// Associate with created locations if available
+				if ( $svc_id && $island_loc_id && $mainland_loc_id ) {
+					$wpdb->insert( $rel_table, array( 'service_id' => $svc_id, 'location_id' => $island_loc_id ) );
+					$wpdb->insert( $rel_table, array( 'service_id' => $svc_id, 'location_id' => $mainland_loc_id ) );
+				}
+			}
 		}
 	}
 

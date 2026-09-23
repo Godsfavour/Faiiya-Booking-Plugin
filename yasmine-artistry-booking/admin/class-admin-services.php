@@ -37,6 +37,10 @@ class YAB_Admin_Services {
 
 		if ( 'save' === $action ) {
 			$id   = absint( $_POST['service_id'] ?? 0 );
+			$location_ids = isset( $_POST['location_ids'] ) && is_array( $_POST['location_ids'] )
+				? array_map( 'absint', $_POST['location_ids'] )
+				: array();
+
 			$data = array(
 				'category_id'      => absint( $_POST['category_id'] ?? 0 ),
 				'name'             => sanitize_text_field( $_POST['name'] ?? '' ),
@@ -46,6 +50,7 @@ class YAB_Admin_Services {
 				'buffer_minutes'   => absint( $_POST['buffer_minutes'] ?? 30 ),
 				'base_price'       => floatval( $_POST['base_price'] ?? 0 ),
 				'is_active'        => isset( $_POST['is_active'] ) ? 1 : 0,
+				'location_ids'     => $location_ids,
 			);
 
 			if ( empty( $data['name'] ) ) {

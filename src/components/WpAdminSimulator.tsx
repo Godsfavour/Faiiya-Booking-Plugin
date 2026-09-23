@@ -77,6 +77,8 @@ export default function WpAdminSimulator({
     depositType: 'percentage',
     depositValue: 50,
     description: '',
+    imageUrl: '',
+    assignedLocationIds: [],
   });
 
   // Verification button states (Mock API calls)
@@ -139,17 +141,32 @@ export default function WpAdminSimulator({
   // Handles: Service offering editing
   const handleSaveService = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanAssignedIds = Array.isArray(serviceForm.assignedLocationIds)
+      ? [...serviceForm.assignedLocationIds]
+      : [];
+
     if (editingServiceId) {
       // Edit
-      const updated = services.map(s => s.id === editingServiceId ? { ...s, ...serviceForm } : s);
+      const updated = services.map(s => {
+        if (s.id === editingServiceId) {
+          return {
+            ...s,
+            ...serviceForm,
+            assignedLocationIds: cleanAssignedIds
+          };
+        }
+        return s;
+      });
       onUpdateServices(updated);
       setEditingServiceId(null);
-      onShowToast?.(`Updated service: ${serviceForm.name}`, 'success');
+      setIsAddingService(false);
+      onShowToast?.(`Updated service: ${serviceForm.name} (${cleanAssignedIds.length === 0 ? 'All locations active' : `${cleanAssignedIds.length} location(s) assigned`})`, 'success');
     } else {
       // Add
       const newService: Service = {
-        id: serviceForm.name.toLowerCase().replace(/\s+/g, '-'),
-        ...serviceForm
+        id: serviceForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        ...serviceForm,
+        assignedLocationIds: cleanAssignedIds
       };
       onUpdateServices([...services, newService]);
       setIsAddingService(false);
@@ -163,6 +180,8 @@ export default function WpAdminSimulator({
       depositType: 'percentage',
       depositValue: 50,
       description: '',
+      imageUrl: '',
+      assignedLocationIds: [],
     });
   };
 
@@ -175,6 +194,8 @@ export default function WpAdminSimulator({
       depositType: s.depositType,
       depositValue: s.depositValue,
       description: s.description,
+      imageUrl: s.imageUrl || '',
+      assignedLocationIds: Array.isArray(s.assignedLocationIds) ? [...s.assignedLocationIds] : [],
     });
     setIsAddingService(true);
   };
@@ -958,6 +979,56 @@ export default function WpAdminSimulator({
                     />
                   </div>
 
+                  {/* Linked Locations / Categories Selector */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-bold text-slate-700 text-[11px] uppercase tracking-wide">
+                        📍 Linked Service Locations / Areas
+                      </label>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {(serviceForm.assignedLocationIds?.length || 0) === 0 ? 'All areas applicable' : `${serviceForm.assignedLocationIds?.length} selected`}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                      Select which locations/branches offer this service. On the client booking form, only these linked locations will appear, enabling precise location-based variable pricing. (Leave empty to allow all).
+                    </p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {(businessSettings.categoryConfig?.options || []).map((loc) => {
+                        const isChecked = (serviceForm.assignedLocationIds || []).includes(loc.id);
+                        return (
+                          <label
+                            key={loc.id}
+                            className={`flex items-center space-x-2.5 p-2 rounded-xl border text-xs font-semibold cursor-pointer transition select-none ${
+                              isChecked 
+                                ? 'bg-indigo-50/80 border-indigo-300 text-indigo-900' 
+                                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100/60'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const current = serviceForm.assignedLocationIds || [];
+                                const updated = e.target.checked
+                                  ? [...current, loc.id]
+                                  : current.filter(id => id !== loc.id);
+                                setServiceForm({ ...serviceForm, assignedLocationIds: updated });
+                              }}
+                              className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-slate-300"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className="truncate block font-bold text-[11px]">{loc.name}</span>
+                              <span className="text-[10px] text-slate-500 font-normal">
+                                {loc.priceValue > 0 ? `+${symbol}${loc.priceValue.toLocaleString()}` : 'No surcharge'}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div className="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
                     <button
                       type="button"
@@ -1003,6 +1074,25 @@ export default function WpAdminSimulator({
                       </div>
                       <p className="text-[11px] text-indigo-600 mt-1 font-bold">{s.duration} minutes slot duration</p>
                       <p className="text-xs text-slate-500 mt-3.5 line-clamp-3 leading-relaxed font-medium">{s.description}</p>
+                      
+                      {/* Linked Locations badge row */}
+                      <div className="mt-3 flex flex-wrap gap-1 items-center">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">Locations:</span>
+                        {(!s.assignedLocationIds || s.assignedLocationIds.length === 0) ? (
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            All locations active
+                          </span>
+                        ) : (
+                          s.assignedLocationIds.map(locId => {
+                            const loc = businessSettings.categoryConfig?.options.find(o => o.id === locId);
+                            return (
+                              <span key={locId} className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                                {loc ? loc.name : locId}
+                              </span>
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-4">

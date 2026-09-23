@@ -40,7 +40,8 @@ const INITIAL_SERVICES: Service[] = [
     depositType: 'percentage',
     depositValue: 50, // 50%
     description: 'Top-tier cuts, customized styling, shampoo washing, blow-drying, and deep nourishing hydration treatments.',
-    imageUrl: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=500&auto=format&fit=crop&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=500&auto=format&fit=crop&q=80',
+    assignedLocationIds: ['lekki', 'mainland'] // Linked to Lekki Studio and Mainland Hub
   },
   {
     id: 'spa-massage',
@@ -50,7 +51,8 @@ const INITIAL_SERVICES: Service[] = [
     depositType: 'fixed',
     depositValue: 15000.00, // 15,000 NGN fixed deposit
     description: 'Deep-tissue muscle relaxation session utilizing organic essential oils, hot stone heat packs, and acupressure.',
-    imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop&q=80',
+    assignedLocationIds: ['lekki', 'ondo', 'mainland'] // All locations available
   },
   {
     id: 'makeup-consult',
@@ -60,7 +62,8 @@ const INITIAL_SERVICES: Service[] = [
     depositType: 'percentage',
     depositValue: 0, // No deposit, pay full price
     description: 'Personalized trial matching skin tones, custom lash selections, contour planning, and bridal palette selection.',
-    imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&auto=format&fit=crop&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&auto=format&fit=crop&q=80',
+    assignedLocationIds: ['lekki', 'ondo'] // Exclusive to Lekki Studio and Ondo Outpost
   }
 ];
 
@@ -354,10 +357,69 @@ const SEED_LOGS: NotificationLog[] = [
 export default function App() {
   const [activePane, setActivePane] = React.useState<'simulator' | 'admin' | 'code'>('simulator');
   
-  // App States
-  const [services, setServices] = React.useState<Service[]>(INITIAL_SERVICES);
-  const [bookings, setBookings] = React.useState<Booking[]>(SEED_BOOKINGS);
-  const [businessSettings, setBusinessSettings] = React.useState<BusinessSettings>(INITIAL_BUSINESS_SETTINGS);
+  // App States with robust localStorage persistence
+  const [services, setServices] = React.useState<Service[]>(() => {
+    try {
+      const saved = localStorage.getItem('yab_services_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to load services from localStorage', e);
+    }
+    return INITIAL_SERVICES;
+  });
+
+  const [bookings, setBookings] = React.useState<Booking[]>(() => {
+    try {
+      const saved = localStorage.getItem('yab_bookings_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to load bookings from localStorage', e);
+    }
+    return SEED_BOOKINGS;
+  });
+
+  const [businessSettings, setBusinessSettings] = React.useState<BusinessSettings>(() => {
+    try {
+      const saved = localStorage.getItem('yab_business_settings_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to load business settings from localStorage', e);
+    }
+    return INITIAL_BUSINESS_SETTINGS;
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('yab_services_state', JSON.stringify(services));
+    } catch (e) {
+      console.error('Failed to save services to localStorage', e);
+    }
+  }, [services]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('yab_bookings_state', JSON.stringify(bookings));
+    } catch (e) {
+      console.error('Failed to save bookings to localStorage', e);
+    }
+  }, [bookings]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('yab_business_settings_state', JSON.stringify(businessSettings));
+    } catch (e) {
+      console.error('Failed to save business settings to localStorage', e);
+    }
+  }, [businessSettings]);
   const [integrations, setIntegrations] = React.useState<IntegrationsState>(INITIAL_INTEGRATIONS);
   const [emailTemplates, setEmailTemplates] = React.useState<EmailTemplates>(INITIAL_EMAIL_TEMPLATES);
   const [logs, setLogs] = React.useState<NotificationLog[]>(SEED_LOGS);

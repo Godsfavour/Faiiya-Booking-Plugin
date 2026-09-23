@@ -202,22 +202,49 @@ class YAB_Location {
 	}
 
 	/**
-	 * Retrieve all locations.
+	 * Retrieve all locations, optionally filtered by service association.
 	 *
 	 * @param array $args
 	 * @return array
 	 */
 	public static function get_all( $args = array() ) {
 		global $wpdb;
-		$table = YAB_Database::table( 'locations' );
+		$table           = YAB_Database::table( 'locations' );
+		$junction_table  = YAB_Database::table( 'service_locations' );
 
-		$where = '1=1';
+		$where  = array( '1=1' );
+		$values = array();
+
 		if ( ! empty( $args['active_only'] ) ) {
-			$where .= ' AND is_active = 1';
+			$where[] = 'l.is_active = 1';
+		}
+
+		// If filtered by service_id
+		if ( ! empty( $args['service_id'] ) ) {
+			$service_id = absint( $args['service_id'] );
+			$linked_ids = YAB_Service::get_linked_location_ids( $service_id );
+			
+			// If this service has explicitly linked locations, restrict to them
+			if ( ! empty( $linked_ids ) ) {
+				$placeholders = implode( ',', array_fill( 0, count( $linked_ids ), '%d' ) );
+				$where[]      = "l.id IN ({$placeholders})";
+				foreach ( $linked_ids as $lid ) {
+					$values[] = $lid;
+				}
+			}
+			// If empty, all active locations apply to this service
+		}
+
+		$where_clause = implode( ' AND ', $where );
+		$query        = "SELECT l.* FROM {$table} l WHERE {$where_clause} ORDER BY l.sort_order ASC, l.name ASC";
+
+		if ( ! empty( $values ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			return $wpdb->get_results( $wpdb->prepare( $query, $values ) );
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_results( "SELECT * FROM {$table} WHERE {$where} ORDER BY sort_order ASC, name ASC" );
+		return $wpdb->get_results( $query );
 	}
 
 	/**

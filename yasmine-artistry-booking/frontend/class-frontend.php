@@ -23,10 +23,18 @@ class YAB_Frontend {
 	 * Register frontend scripts and styles.
 	 */
 	public static function register_assets() {
+		// Enqueue Google Fonts: Cormorant Garamond, Montserrat, Playfair Display
+		wp_register_style(
+			'yab-google-fonts',
+			'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap',
+			array(),
+			null
+		);
+
 		wp_register_style(
 			'yab-frontend-css',
 			YAB_PLUGIN_URL . 'assets/css/yab-frontend.css',
-			array(),
+			array( 'yab-google-fonts' ),
 			YAB_VERSION
 		);
 
@@ -57,6 +65,9 @@ class YAB_Frontend {
 				'currency'       => YAB_Settings::get( 'general', 'currency', 'NGN' ),
 				'paystackKey'    => YAB_Paystack::get_public_key(),
 				'businessName'   => YAB_Settings::get( 'general', 'business_name', 'Yasmine Artistry' ),
+				'depositType'    => YAB_Settings::get( 'deposit', 'deposit_type', 'percentage' ),
+				'depositValue'   => floatval( YAB_Settings::get( 'deposit', 'deposit_percentage', 50 ) ),
+				'extraLookRate'  => floatval( YAB_Settings::get( 'deposit', 'extra_look_rate', 50000.00 ) ),
 			)
 		);
 	}

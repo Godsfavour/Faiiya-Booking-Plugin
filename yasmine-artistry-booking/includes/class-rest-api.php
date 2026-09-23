@@ -173,8 +173,14 @@ class YAB_REST_API {
 		return rest_ensure_response( array( 'success' => true, 'data' => $services ) );
 	}
 
-	public static function get_locations() {
-		$locations = YAB_Location::get_all( array( 'active_only' => true ) );
+	public static function get_locations( WP_REST_Request $request ) {
+		$args = array( 'active_only' => true );
+		$service_id = absint( $request->get_param( 'service_id' ) );
+		if ( $service_id > 0 ) {
+			$args['service_id'] = $service_id;
+		}
+
+		$locations = YAB_Location::get_all( $args );
 		return rest_ensure_response( array( 'success' => true, 'data' => $locations ) );
 	}
 
@@ -182,8 +188,9 @@ class YAB_REST_API {
 		$service_id     = absint( $request->get_param( 'service_id' ) );
 		$location_id    = absint( $request->get_param( 'location_id' ) );
 		$payment_choice = sanitize_key( $request->get_param( 'payment_choice' ) ?: 'deposit' );
+		$extra_looks    = absint( $request->get_param( 'extra_looks' ) ?: 0 );
 
-		$quote = YAB_Pricing::calculate_quote( $service_id, $location_id, $payment_choice );
+		$quote = YAB_Pricing::calculate_quote( $service_id, $location_id, $payment_choice, $extra_looks );
 		if ( is_wp_error( $quote ) ) {
 			return new WP_REST_Response( array( 'success' => false, 'message' => $quote->get_error_message() ), 400 );
 		}

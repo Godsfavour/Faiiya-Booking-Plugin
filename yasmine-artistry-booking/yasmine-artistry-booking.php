@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Faiiya Booking
  * Plugin URI: https://faiiya.com/
- * Description: Production-grade salon and home-service booking engine with dynamic location pricing, Paystack deposits, atomic availability tracking, and frontend rescheduling.
- * Version: 1.2
+ * Description: Production-grade bridal atelier, salon and home-service booking engine with dynamic location pricing, Paystack deposits, atomic availability tracking, and frontend rescheduling.
+ * Version: 2.0
  * Author: Faiiya Artistry
  * Author URI: https://faiiya.com/
  * Text Domain: yasmine-artistry-booking
@@ -47,8 +47,8 @@ if ( ! function_exists( 'wp_timezone_string' ) ) {
 }
 
 // Plugin constants.
-define( 'YAB_VERSION', '1.2' );
-define( 'YAB_DB_VERSION', '1.2' );
+define( 'YAB_VERSION', '2.0' );
+define( 'YAB_DB_VERSION', '2.0' );
 define( 'YAB_PLUGIN_FILE', __FILE__ );
 define( 'YAB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'YAB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
